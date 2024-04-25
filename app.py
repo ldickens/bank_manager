@@ -1,9 +1,9 @@
-from urllib import request
-
 import customtkinter as ctk
 from tksheet import Sheet
 
 import formatters
+from _types import Presenter
+
 
 class App(ctk.CTk):
     def __init__(self) -> None:
@@ -37,8 +37,8 @@ class App(ctk.CTk):
         self.get_media()
         self.sheet.pack(expand=True, fill="both")
 
-    def init_ui(self, presenter: Presenter) -> Presenter:
-        return presenter
+    def init_ui(self, presenter: Presenter) -> None:
+        self._presenter = presenter
 
     def get_media(self) -> None:
         media_map = self._presenter.get_media_map()

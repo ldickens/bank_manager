@@ -4,12 +4,13 @@ from typing import NewType
 import requests
 
 from _types import MEDIA_MAP
+from endpoint_enums import Endpoints
 
 _BASE_URL = "http://localhost:40512"
 
 
 class Model:
-    def rest_request(self, endpoint: Enum) -> MEDIA_MAP | None:
+    def rest_request(self, endpoint: Endpoints) -> MEDIA_MAP | None:
         try:
             full_URL = _BASE_URL + endpoint.value
             response = requests.get(full_URL)
