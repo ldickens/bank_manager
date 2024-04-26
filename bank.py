@@ -1,18 +1,10 @@
-from _types import MEDIA_DATA
+from _types import MEDIA
 
 
 class Bank:
     def __init__(self, bank: int, data: list[list[str]]) -> None:
         self.bank: int = bank
-        self.media_clips: dict[int, Media] | None = None
-
-    @property
-    def data(self) -> list[MEDIA_DATA]:
-        media_list = []
-        if self.media_clips != None:
-            for med in self.media_clips.values():
-                media_list.append(med.data)
-        return media_list
+        self._media_clips: dict[int, Media] = {}
 
 
 class Media(Bank):

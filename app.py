@@ -1,19 +1,61 @@
+from tkinter import IntVar, StringVar
+
 import customtkinter as ctk
 from tksheet import Sheet
 
 import formatters
-from _types import Presenter
+from _types import MEDIA_MAP_ENTRY, Presenter
 
 
 class App(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()  # type: ignore
 
-        self._presenter: Presenter
-
         self.geometry("600x500")
         self.title("Bank Manager")
 
+    def init_ui(self, presenter: Presenter) -> None:
+        MainWindow(self, presenter).pack(expand=True, fill="both")
+
+
+class MainWindow(ctk.CTkFrame):
+    def __init__(self, master, presenter: Presenter, *args, **kwargs) -> None:
+        super().__init__(master, *args, **kwargs)
+
+        self._presenter = presenter
+        BANKS = [str(n) for n in range(256)]
+        self.media: MEDIA_MAP_ENTRY = []
+
+        """
+        Options
+        """
+        """
+        Target IP
+        """
+        self.target_ip_var = StringVar(name="Target IP", value="127.0.0.1")
+        self.target_ip_entry = ctk.CTkEntry(self, placeholder_text="Target IP")
+        self.target_ip_entry.pack(side="left")
+
+        """
+        Pull Media
+        """
+        self.pull_media_button = ctk.CTkButton(
+            self, text="Pull", command=self.pull_callback
+        )
+        self.pull_media_button.pack(side="left")
+
+        """
+        Bank Select
+        """
+        self.bank_select_entry_var = StringVar(name="Bank Select", value="0")
+        self.bank_select_entry = ctk.CTkComboBox(
+            self, values=BANKS, variable=self.bank_select_entry_var
+        )
+        self.bank_select_entry.pack(side="left")
+
+        """
+        Table Sheet
+        """
         HEADERS = ["Index", "MediaID", "Name"]
 
         self.sheet = Sheet(
@@ -34,13 +76,11 @@ class App(ctk.CTk):
         )
 
         self.sheet.enable_bindings()
-        self.get_media()
-        self.sheet.pack(expand=True, fill="both")
+        self.sheet.pack(expand=True, fill="both", side="bottom")
 
-    def init_ui(self, presenter: Presenter) -> None:
-        self._presenter = presenter
+    def pull_callback(self) -> None:
+        self._presenter.set_target_ip(self.target_ip_var.get())
+        self.media_map = self._presenter.get_media_map()
 
-    def get_media(self) -> None:
-        media_map = self._presenter.get_media_map()
-        if media_map != None:
-            self.sheet.set_sheet_data(data=formatters.parse_json(media_map))
+    def update_sheet(self, bank_id: int) -> None:
+        self.sheet.set_sheet_data(data=formatters.parse_json(self.media))

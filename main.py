@@ -3,11 +3,11 @@ from presenter import Presenter
 from rest_api import Model
 
 
-def Main() -> None:
+def main() -> None:
     model = Model()
     view = App()
     presenter = Presenter(view, model)
     presenter.run()
 
 
-main = Main()
+main()
