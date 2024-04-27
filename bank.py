@@ -1,13 +1,28 @@
+from __future__ import annotations
+
 from _types import MEDIA
 
 
 class Bank:
-    def __init__(self, bank: int, data: list[list[str]]) -> None:
+    def __init__(self, bank: int) -> None:
         self.bank: int = bank
         self._media_clips: dict[int, Media] = {}
 
+    def add_clip(self, media: Media, slot: int) -> None:
+        self._media_clips.update({slot: media})
 
-class Media(Bank):
+    def __repr__(self) -> str:
+        output = ""
+        for idx, media in self._media_clips.items():
+            output += f"Slot: {idx} -- {str(repr(media))}"
+
+        return output
+
+    def __str__(self) -> str:
+        pass
+
+
+class Media:
     def __init__(
         self,
         aspectRatio: int = 0,
@@ -45,6 +60,8 @@ class Media(Bank):
         self.timeUploaded: str = timeUploaded
         self.width: int = width
 
+        self._data: list[int | str | bool | list[int]] = []
+
     @property
     def data(self) -> MEDIA:
         return [
@@ -65,3 +82,17 @@ class Media(Bank):
             self.timeUploaded,
             self.width,
         ]
+
+    def get_converted_idx(self) -> list[tuple[int, int]]:
+        banks = []
+        for idx in self.mapIndexes:
+            bank_slot = divmod(idx, 256)
+            banks.append(bank_slot)
+
+        return banks
+
+    def __repr__(self) -> list[int | str | bool | list[int]]:
+        return self.data
+
+    def __str__(self) -> str:
+        pass
