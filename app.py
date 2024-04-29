@@ -1,10 +1,10 @@
-from tkinter import IntVar, StringVar
+from tkinter import StringVar
+from typing import Any
 
 import customtkinter as ctk
 from tksheet import Sheet
 
-import formatters
-from _types import MEDIA_MAP_ENTRY, Presenter
+from _types import Presenter
 
 
 class App(ctk.CTk):
@@ -24,7 +24,7 @@ class MainWindow(ctk.CTkFrame):
 
         self._presenter = presenter
         BANKS = [str(n) for n in range(256)]
-        self.media: MEDIA_MAP_ENTRY = []
+        self.media: Any = []  # change once implemented
 
         """
         Options
@@ -79,8 +79,10 @@ class MainWindow(ctk.CTkFrame):
         self.sheet.pack(expand=True, fill="both", side="bottom")
 
     def pull_callback(self) -> None:
-        self._presenter.set_target_ip(self.target_ip_var.get())
-        self.media_map = self._presenter.get_media_map()
+        # self._presenter.set_target_ip(self.target_ip_var.get())
+        # self.media_map = self._presenter.get_media_map()
+        pass
 
     def update_sheet(self, bank_id: int) -> None:
-        self.sheet.set_sheet_data(data=formatters.parse_json(self.media))
+        # self.sheet.set_sheet_data(data=formatters.parse_json(self.media))
+        pass

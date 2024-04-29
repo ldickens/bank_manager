@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from _types import MEDIA_MAP
 from app import App
 from endpoint_enums import Endpoints
 from rest_api import Model
@@ -15,8 +14,9 @@ class Presenter:
         self.view.init_ui(self)
         self.view.mainloop()
 
-    def get_media_map(self) -> MEDIA_MAP | None:
-        self.model.rest_request(Endpoints.GET_MEDIA)
+    def get_media_map(self) -> None:
+        # self.model.rest_request(Endpoints.GET_MEDIA)
+        pass
 
     def set_target_ip(self, target_ip: str) -> None:
         self.model.BASE_URL = target_ip

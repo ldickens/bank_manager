@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from _types import MEDIA
+import collections
+from typing import OrderedDict
 
 
 class Bank:
     def __init__(self, bank: int) -> None:
         self.bank: int = bank
-        self._media_clips: dict[int, Media] = {}
+        self._media_clips: OrderedDict[int, Media | None] = collections.OrderedDict()
+
+        for num in range(0, 256):
+            self._media_clips[num] = None
 
     def add_clip(self, media: Media, slot: int) -> None:
         self._media_clips.update({slot: media})
@@ -14,12 +18,13 @@ class Bank:
     def __repr__(self) -> str:
         output = ""
         for idx, media in self._media_clips.items():
-            output += f"Slot: {idx} -- {str(repr(media))}"
+            if media != None:
+                output += f"Slot: {idx} -- {str(repr(media))}\n"
 
         return output
 
-    def __str__(self) -> str:
-        pass
+
+MEDIA_TYPE = list[int | str | bool | list[str]]
 
 
 class Media:
@@ -38,7 +43,7 @@ class Media:
         hasAlpha: bool = True,
         height: int = 0,
         iD: str = "",
-        mapIndexes: list[int] = [],
+        mapIndexes: list[str] = [],
         timeUploaded: str = "",
         width: int = 0,
     ) -> None:
@@ -56,14 +61,14 @@ class Media:
         self.hasAlpha: bool = hasAlpha
         self.height: int = height
         self.iD: str = iD
-        self.mapIndexes: list[int] = mapIndexes
+        self.mapIndexes: list[str] = mapIndexes
         self.timeUploaded: str = timeUploaded
         self.width: int = width
 
-        self._data: list[int | str | bool | list[int]] = []
+        self._data: MEDIA_TYPE = []
 
     @property
-    def data(self) -> MEDIA:
+    def data(self) -> MEDIA_TYPE:
         return [
             self.aspectRatio,
             self.audioChannels,
@@ -83,16 +88,5 @@ class Media:
             self.width,
         ]
 
-    def get_converted_idx(self) -> list[tuple[int, int]]:
-        banks = []
-        for idx in self.mapIndexes:
-            bank_slot = divmod(idx, 256)
-            banks.append(bank_slot)
-
-        return banks
-
-    def __repr__(self) -> list[int | str | bool | list[int]]:
-        return self.data
-
-    def __str__(self) -> str:
-        pass
+    def __repr__(self) -> str:
+        return str(self.data)
