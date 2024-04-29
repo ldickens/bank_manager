@@ -19,4 +19,5 @@ class Presenter:
         pass
 
     def set_target_ip(self, target_ip: str) -> None:
-        self.model.BASE_URL = target_ip
+        new_url = "http://" + target_ip + ":40512"
+        self.model.BASE_URL = new_url

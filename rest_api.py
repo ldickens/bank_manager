@@ -85,7 +85,7 @@ class Model:
         self.init_banks()
 
         # debugging
-        self.debug_banks()
+        # self.debug_banks()
         # self.debug_media()
 
     @property
@@ -199,7 +199,6 @@ class Model:
                 self.banks[bank].add_clip(media, slot)
 
     def calculate_index(self, index: str) -> tuple[int, int]:
-        print(index)
         bank, slot = divmod(int(index), 256)
         return (bank, slot)
 
