@@ -14,9 +14,8 @@ class Presenter:
         self.view.init_ui(self)
         self.view.mainloop()
 
-    def get_media_map(self) -> None:
-        # self.model.rest_request(Endpoints.GET_MEDIA)
-        pass
+    def get_media_map(self, *args) -> None:
+        self.model.banks.get(*args)
 
     def set_target_ip(self, target_ip: str) -> None:
         new_url = "http://" + target_ip + ":40512"

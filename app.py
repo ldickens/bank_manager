@@ -27,18 +27,23 @@ class MainWindow(ctk.CTkFrame):
         """
         Options
         """
-        options_frame = OptionsFrame(self._presenter, self, fg_color="transparent")
-        options_frame.pack()
+        self.options_frame = OptionsFrame(
+            self._presenter, self, master=self, fg_color="transparent"
+        )
+        self.options_frame.pack()
 
         """
         Sheet
         """
-        bank_frame = BankSheet(self)
-        bank_frame.pack(expand=True, fill="both")
+        self.bank_frame = BankSheet(self)
+        self.bank_frame.pack(expand=True, fill="both")
+
+    def pull_button_callback(self):
+        self.bank_frame.sheet.set_sheet_data(self._presenter.get_media_map)
 
 
 class OptionsFrame(ctk.CTkFrame):
-    def __init__(self, presenter: Presenter, *args, **kwargs):
+    def __init__(self, presenter: Presenter, parent: MainWindow, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._presenter: Presenter = presenter
@@ -65,18 +70,13 @@ class OptionsFrame(ctk.CTkFrame):
         Pull Media
         """
         self.pull_media_button = ctk.CTkButton(
-            self, text="Pull", command=self.pull_callback
+            self, text="Pull", command=lambda: self.pull_callback(parent)
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
-    # def validate_entry_bank_entry_callback(self, input: str) -> bool:
-    #     if input.isnumeric():
-    #         if 0 <= int(input) < 256:
-    #             return True
-    #     return False
-
-    def pull_callback(self) -> None:
+    def pull_callback(self, parent) -> None:
         self._presenter.set_target_ip(self.target_ip_var.get())
+        parent.pull_button_callback()
         # self._presenter.get_media_map() #solution is to possible inject the class above into here for access to the props and methods
 
 

@@ -80,9 +80,11 @@ class Model:
             self.banks.update({x: bank})
 
         self._BASE_URL: str = "http://localhost:40512"
+        self.media_loaded: bool = False
 
-        self.init_media()
-        self.init_banks()
+        self.media_loaded = self.init_media()
+        if self.media_loaded:
+            self.init_banks()
 
         # debugging
         # self.debug_banks()
@@ -164,33 +166,34 @@ class Model:
     def delete_media(self) -> None:
         self.media = []
 
-    def init_media(self) -> None:
+    def init_media(self) -> bool:
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
         if endpoint != None:
             media_data = self.make_request(*endpoint)
 
-        if media_data != None:
-            valid_media = self.validate_media_file_type(media_data)
+            if media_data != None:
+                valid_media = self.validate_media_file_type(media_data)
 
-        else:
-            raise Exception("Failed to load Media")
+                if valid_media != None:
+                    for file in valid_media["mediaFiles"]:
+                        media_id = file["mediaID"]
+                        endpoint = self.validate_endpoint(
+                            Endpoints.GET_MEDIA_DATA, media_id
+                        )
 
-        if valid_media != None:
-            for file in valid_media["mediaFiles"]:
-                media_id = file["mediaID"]
-                endpoint = self.validate_endpoint(Endpoints.GET_MEDIA_DATA, media_id)
+                        if endpoint != None:
+                            media_data = self.make_request(*endpoint)
 
-                if endpoint != None:
-                    media_data = self.make_request(*endpoint)
+                        if media_data != None:
+                            valid_clip = self.validate_media_type(media_data)
 
-                if media_data != None:
-                    valid_clip = self.validate_media_type(media_data)
+                        else:
+                            raise Exception(f"Failed to get data for {media_id}")
 
-                else:
-                    raise Exception(f"Failed to get data for {media_id}")
-
-                if valid_clip != None:
-                    self.media.append(self.create_media(valid_clip))
+                        if valid_clip != None:
+                            self.media.append(self.create_media(valid_clip))
+                            return True
+        return False
 
     def init_banks(self) -> None:
         for media in self.media:
@@ -209,3 +212,5 @@ class Model:
     def debug_media(self) -> None:
         for med in self.media:
             print(f"{med} \n")
+
+    def get_bank_data(self, **kwargs) -> 

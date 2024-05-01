@@ -3,6 +3,7 @@ from __future__ import annotations
 import collections
 from typing import OrderedDict
 
+MEDIA_TYPE = list[int | str | bool | list[str]]
 
 class Bank:
     def __init__(self, bank: int) -> None:
@@ -23,8 +24,10 @@ class Bank:
 
         return output
 
+    @property
+    def media_clips(self, *args):
+        
 
-MEDIA_TYPE = list[int | str | bool | list[str]]
 
 
 class Media:
@@ -68,7 +71,9 @@ class Media:
         self._data: MEDIA_TYPE = []
 
     @property
-    def data(self) -> MEDIA_TYPE:
+    def data(self, *args) -> MEDIA_TYPE:
+        for key in args:
+            print(key)
         return [
             self.aspectRatio,
             self.audioChannels,
@@ -79,7 +84,6 @@ class Media:
             self.fileName,
             self.fileSize,
             self.fileType,
-            self.fps,
             self.hasAlpha,
             self.height,
             self.iD,
