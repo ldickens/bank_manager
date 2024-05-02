@@ -79,12 +79,8 @@ class Model:
             bank = Bank(x)
             self.banks.update({x: bank})
 
-        self._BASE_URL: str = "http://localhost:40512"
+        self._BASE_URL: str = "http://127.0.0.1:40512"
         self.media_loaded: bool = False
-
-        self.media_loaded = self.init_media()
-        if self.media_loaded:
-            self.init_banks()
 
         # debugging
         # self.debug_banks()
@@ -166,6 +162,15 @@ class Model:
     def delete_media(self) -> None:
         self.media = []
 
+    def init_database(self) -> bool:
+        if self.media_loaded:
+            self.media = []
+            self.banks = {}
+
+        if self.init_media():
+            return self.init_banks()
+        return False
+
     def init_media(self) -> bool:
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
         if endpoint != None:
@@ -182,24 +187,25 @@ class Model:
                         )
 
                         if endpoint != None:
-                            media_data = self.make_request(*endpoint)
+                            clip_data = self.make_request(*endpoint)
 
-                        if media_data != None:
-                            valid_clip = self.validate_media_type(media_data)
+                        if clip_data != None:
+                            valid_clip = self.validate_media_type(clip_data)
 
                         else:
-                            raise Exception(f"Failed to get data for {media_id}")
+                            raise AttributeError(f"Failed to get data for {media_id}")
 
                         if valid_clip != None:
                             self.media.append(self.create_media(valid_clip))
-                            return True
+                    return True
         return False
 
-    def init_banks(self) -> None:
+    def init_banks(self) -> bool:
         for media in self.media:
             for idx in media.mapIndexes:
                 bank, slot = self.calculate_index(idx)
                 self.banks[bank].add_clip(media, slot)
+        return True
 
     def calculate_index(self, index: str) -> tuple[int, int]:
         bank, slot = divmod(int(index), 256)
@@ -212,5 +218,3 @@ class Model:
     def debug_media(self) -> None:
         for med in self.media:
             print(f"{med} \n")
-
-    def get_bank_data(self, **kwargs) -> 

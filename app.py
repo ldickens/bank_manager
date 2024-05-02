@@ -1,3 +1,4 @@
+from re import fullmatch
 from tkinter import StringVar
 from typing import Any
 
@@ -8,14 +9,15 @@ from _types import Presenter
 
 
 class App(ctk.CTk):
-    def __init__(self) -> None:
+    def __init__(self, presenter: Presenter) -> None:
         super().__init__()  # type: ignore
 
         self.geometry("600x500")
         self.title("Bank Manager")
+        self._presenter = presenter
 
-    def init_ui(self, presenter: Presenter) -> None:
-        MainWindow(self, presenter).pack(expand=True, fill="both")
+        self.main_frame = MainWindow(self, presenter)
+        self.main_frame.pack(expand=True, fill="both")
 
 
 class MainWindow(ctk.CTkFrame):
@@ -28,7 +30,7 @@ class MainWindow(ctk.CTkFrame):
         Options
         """
         self.options_frame = OptionsFrame(
-            self._presenter, self, master=self, fg_color="transparent"
+            self._presenter, master=self, fg_color="transparent"
         )
         self.options_frame.pack()
 
@@ -38,12 +40,15 @@ class MainWindow(ctk.CTkFrame):
         self.bank_frame = BankSheet(self)
         self.bank_frame.pack(expand=True, fill="both")
 
-    def pull_button_callback(self):
-        self.bank_frame.sheet.set_sheet_data(self._presenter.get_media_map)
+        """
+        Status Bar
+        """
+        self.status = StatusBar(self)
+        self.status.pack(side="bottom", fill="x")
 
 
 class OptionsFrame(ctk.CTkFrame):
-    def __init__(self, presenter: Presenter, parent: MainWindow, *args, **kwargs):
+    def __init__(self, presenter: Presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._presenter: Presenter = presenter
@@ -52,7 +57,12 @@ class OptionsFrame(ctk.CTkFrame):
         Target IP
         """
         self.target_ip_var = StringVar(name="Target IP", value="127.0.0.1")
-        self.target_ip_entry = ctk.CTkEntry(self, placeholder_text="Target IP")
+        self.target_ip_entry = ctk.CTkEntry(
+            self,
+            textvariable=self.target_ip_var,
+            validate="focusout",
+            validatecommand=(self.register(self.validate_ip_input), "%P", "%s"),
+        )
         self.target_ip_entry.pack(side="left", pady=5, padx=5)
 
         """
@@ -63,6 +73,7 @@ class OptionsFrame(ctk.CTkFrame):
             self,
             variable=self.bank_select_entry_var,
             values=[str(num) for num in range(0, 256)],
+            command=lambda bank: self.bank_select_entry_callback(int(bank)),
         )
         self.bank_select_entry.pack(side="left", pady=5, padx=5)
 
@@ -70,14 +81,29 @@ class OptionsFrame(ctk.CTkFrame):
         Pull Media
         """
         self.pull_media_button = ctk.CTkButton(
-            self, text="Pull", command=lambda: self.pull_callback(parent)
+            self, text="Pull", command=self.pull_callback
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
-    def pull_callback(self, parent) -> None:
-        self._presenter.set_target_ip(self.target_ip_var.get())
-        parent.pull_button_callback()
-        # self._presenter.get_media_map() #solution is to possible inject the class above into here for access to the props and methods
+    def pull_callback(self) -> None:
+        self._presenter.pull_media()
+
+    def validate_ip_input(self, edit: str, pre: str) -> bool:
+        print("got here")
+        if not fullmatch(
+            r"\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/ig",
+            edit,
+        ):
+            if pre != "":  # handles startup case where there is no pre-edit
+                print("got inside here")
+                self.target_ip_var.set(pre)
+            return False
+
+        # self._presenter.set_target_ip(self.target_ip_var.get())
+        return True
+
+    def bank_select_entry_callback(self, bank: int) -> None:
+        self._presenter.get_bank(bank)
 
 
 class BankSheet(ctk.CTkFrame):
@@ -86,21 +112,21 @@ class BankSheet(ctk.CTkFrame):
         """
         Table Sheet
         """
-        HEADERS = ["Index", "MediaID", "Name"]
+        HEADERS = ["File Name"]
 
         self.sheet = Sheet(
             self,
             name="Bank_Data",
-            show_top_left=False,
+            show_top_left=True,
             headers=HEADERS,  # type: ignore
             show_x_scrollbar=False,
-            total_columns=3,
+            total_columns=1,
             align="c",
             show_vertical_grid=False,
             empty_horizontal=0,
             empty_vertical=0,
             auto_resize_columns=80,
-            displayed_columns=[0, 2],  # Hide the MediaID Column
+            displayed_columns=[0],  # Hide the MediaID Column
             all_columns_displayed=False,
             auto_resize_row_index=True,
         )
@@ -108,6 +134,22 @@ class BankSheet(ctk.CTkFrame):
         self.sheet.enable_bindings()
         self.sheet.pack(expand=True, fill="both", side="bottom")
 
-    def update_sheet(self, bank_id: int) -> None:
-        # self.sheet.set_sheet_data(data=formatters.parse_json(self.media))
-        pass
+    def update_sheet(self, data) -> None:
+        self.sheet.set_sheet_data(
+            data=data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
+
+class StatusBar(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.status_var = StringVar()
+        self.status = ctk.CTkLabel(self, textvariable=self.status_var)
+        self.status.pack(side="right")

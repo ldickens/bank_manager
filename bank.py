@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import collections
+from re import A
 from typing import OrderedDict
 
-MEDIA_TYPE = list[int | str | bool | list[str]]
+MEDIA_TYPE = dict[str, int | str | bool | list[str]]
+
 
 class Bank:
     def __init__(self, bank: int) -> None:
@@ -25,9 +27,15 @@ class Bank:
         return output
 
     @property
-    def media_clips(self, *args):
-        
+    def media_clips(self) -> list[MEDIA_TYPE]:
+        media_data = []
+        for media in self._media_clips.values():
+            if isinstance(media, Media):
+                media_data.append(media.data)
+            else:
+                media_data.append({"0": 0})
 
+        return media_data
 
 
 class Media:
@@ -68,29 +76,29 @@ class Media:
         self.timeUploaded: str = timeUploaded
         self.width: int = width
 
-        self._data: MEDIA_TYPE = []
+        self._data: MEDIA_TYPE = {}
 
     @property
     def data(self, *args) -> MEDIA_TYPE:
         for key in args:
             print(key)
-        return [
-            self.aspectRatio,
-            self.audioChannels,
-            self.audioSampleRate,
-            self.canBeDeleted,
-            self.duration,
-            self.durationFrames,
-            self.fileName,
-            self.fileSize,
-            self.fileType,
-            self.hasAlpha,
-            self.height,
-            self.iD,
-            self.mapIndexes,
-            self.timeUploaded,
-            self.width,
-        ]
+        return {
+            "aspectRatio": self.aspectRatio,
+            "audioChannels": self.audioChannels,
+            "audioSampleRate": self.audioSampleRate,
+            "canBeDeleted": self.canBeDeleted,
+            "duration": self.duration,
+            "durationFrames": self.durationFrames,
+            "fileName": self.fileName,
+            "fileSize": self.fileSize,
+            "fileType": self.fileType,
+            "hasAlpha": self.hasAlpha,
+            "height": self.height,
+            "iD": self.iD,
+            "mapIndexes": self.mapIndexes,
+            "timeUploaded": self.timeUploaded,
+            "width": self.width,
+        }
 
     def __repr__(self) -> str:
         return str(self.data)
