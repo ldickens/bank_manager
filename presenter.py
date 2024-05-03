@@ -48,3 +48,6 @@ class Presenter:
         self.current_ip = target_ip
         new_url = "http://" + target_ip + ":40512"
         self.model._BASE_URL = new_url
+
+    def show_status(self, msg: str) -> None:
+        self.view.main_frame.status.status_var.set(msg)

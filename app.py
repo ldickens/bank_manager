@@ -1,5 +1,5 @@
 from re import fullmatch
-from tkinter import StringVar
+from tkinter import Event, StringVar
 from typing import Any
 
 import customtkinter as ctk
@@ -53,6 +53,9 @@ class OptionsFrame(ctk.CTkFrame):
 
         self._presenter: Presenter = presenter
 
+        self.validate_pre_edit: str = ""
+        self.validate_bank_pre_edit: str = ""
+
         """
         Target IP
         """
@@ -60,22 +63,35 @@ class OptionsFrame(ctk.CTkFrame):
         self.target_ip_entry = ctk.CTkEntry(
             self,
             textvariable=self.target_ip_var,
-            validate="focusout",
-            validatecommand=(self.register(self.validate_ip_input), "%P", "%s"),
         )
         self.target_ip_entry.pack(side="left", pady=5, padx=5)
+
+        self.target_ip_entry.bind("<FocusIn>", self.validate_ip_input_focusin)
+        self.target_ip_entry.bind("<FocusOut>", self.validate_ip_input_focusout)
+        self.target_ip_entry.bind("<Return>", self.lose_focus_callback)
 
         """
         Bank Select
         """
         self.bank_select_entry_var = StringVar(name="Bank Select", value="0")
-        self.bank_select_entry = ctk.CTkComboBox(
+        self.bank_select_entry = ctk.CTkEntry(
             self,
-            variable=self.bank_select_entry_var,
-            values=[str(num) for num in range(0, 256)],
-            command=lambda bank: self.bank_select_entry_callback(int(bank)),
+            textvariable=self.bank_select_entry_var,
+            validate="key",
+            validatecommand=(
+                self.register(self.validate_bank_select_entry_keypress),
+                "%P",
+            ),
         )
         self.bank_select_entry.pack(side="left", pady=5, padx=5)
+
+        self.bank_select_entry.bind(
+            "<FocusOut>", self.validate_bank_select_entry_focusout
+        )
+        self.bank_select_entry.bind(
+            "<FocusIn>", self.validate_bank_select_entry_focusin
+        )
+        self.bank_select_entry.bind("<Return>", self.lose_focus_callback)
 
         """
         Pull Media
@@ -88,22 +104,36 @@ class OptionsFrame(ctk.CTkFrame):
     def pull_callback(self) -> None:
         self._presenter.pull_media()
 
-    def validate_ip_input(self, edit: str, pre: str) -> bool:
-        print("got here")
-        if not fullmatch(
-            r"\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/ig",
-            edit,
-        ):
-            if pre != "":  # handles startup case where there is no pre-edit
-                print("got inside here")
-                self.target_ip_var.set(pre)
-            return False
+    def validate_ip_input_focusin(self, event: Event) -> None:
+        self.validate_pre_edit = self.target_ip_var.get()
 
-        # self._presenter.set_target_ip(self.target_ip_var.get())
-        return True
+    def validate_ip_input_focusout(self, event: Event) -> None:
+        ipv4_pattern = "^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
+        if not fullmatch(ipv4_pattern, self.target_ip_var.get()):
+            self.target_ip_var.set(self.validate_pre_edit)
+            self._presenter.show_status("IP not valid")
+
+    def lose_focus_callback(self, event: Event) -> None:
+        self.focus()
 
     def bank_select_entry_callback(self, bank: int) -> None:
         self._presenter.get_bank(bank)
+
+    def validate_bank_select_entry_keypress(self, edit: str) -> bool:
+        if not edit.isdigit():
+            return False
+        return True
+
+    def validate_bank_select_entry_focusin(self, event: Event) -> None:
+        self.validate_bank_pre_edit = self.bank_select_entry_var.get()
+
+    def validate_bank_select_entry_focusout(self, event: Event) -> None:
+        entry = int(self.bank_select_entry_var.get())
+        if entry > 256 or entry < 0:
+            self.bank_select_entry_var.set(self.validate_bank_pre_edit)
+            self._presenter.show_status("Bank number not valid")
+        self._presenter.get_bank(int(self.bank_select_entry_var.get()))
 
 
 class BankSheet(ctk.CTkFrame):
