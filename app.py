@@ -34,9 +34,9 @@ class MainWindow(ctk.CTkFrame):
         self.status_frame = ctk.CTkFrame(self)
         self.status_frame.pack(fill="x")
 
-        self.top_frame.grid_rowconfigure(0, weight=0)
+        self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
-        self.top_frame.grid_rowconfigure(2, weight=0)
+        self.top_frame.grid_rowconfigure(2)
         self.top_frame.grid_columnconfigure(0, weight=1)
         self.top_frame.grid_columnconfigure(1)
         self.top_frame.grid_columnconfigure(2, weight=1)
@@ -77,7 +77,7 @@ class MainWindow(ctk.CTkFrame):
         Media Sheet
         """
         self.media_frame = MediaSheet(self.top_frame)
-        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="nsew")
+        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="ew")
 
         """
         Status Bar
@@ -149,7 +149,7 @@ class OptionsFrame(ctk.CTkFrame):
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
     def import_csv_callback(self) -> None:
-        self._presenter.import_csv(str(tkinter.filedialog.LoadFileDialog(self)))
+        self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
 
     def pull_callback(self) -> None:
         self._presenter.pull_media()
@@ -297,6 +297,7 @@ class MediaSheet(ctk.CTkFrame):
             displayed_columns=[0],
             all_columns_displayed=False,
             auto_resize_row_index=True,
+            height=100,
         )
 
         self.sheet.enable_bindings()
