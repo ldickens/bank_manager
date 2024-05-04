@@ -1,3 +1,5 @@
+import tkinter
+import tkinter.filedialog
 from re import fullmatch
 from tkinter import Event, StringVar
 from typing import Any
@@ -12,7 +14,7 @@ class App(ctk.CTk):
     def __init__(self, presenter: Presenter) -> None:
         super().__init__()  # type: ignore
 
-        self.geometry("600x500")
+        self.geometry("800x500")
         self.title("Bank Manager")
         self._presenter = presenter
 
@@ -26,25 +28,62 @@ class MainWindow(ctk.CTkFrame):
 
         self._presenter = presenter
 
+        self.top_frame = ctk.CTkFrame(self)
+        self.top_frame.pack(expand=True, fill="both")
+
+        self.status_frame = ctk.CTkFrame(self)
+        self.status_frame.pack(fill="x")
+
+        self.top_frame.grid_rowconfigure(0, weight=0)
+        self.top_frame.grid_rowconfigure(1, weight=1)
+        self.top_frame.grid_rowconfigure(2, weight=0)
+        self.top_frame.grid_columnconfigure(0, weight=1)
+        self.top_frame.grid_columnconfigure(1)
+        self.top_frame.grid_columnconfigure(2, weight=1)
+
         """
         Options
         """
         self.options_frame = OptionsFrame(
-            self._presenter, master=self, fg_color="transparent"
+            self._presenter, master=self.top_frame, fg_color="transparent"
         )
-        self.options_frame.pack()
+        self.options_frame.grid_configure(
+            column=0, columnspan=3, row=0, sticky="nsew", ipadx=20, ipady=20
+        )
 
         """
-        Sheet
+        Import Sheet
         """
-        self.bank_frame = BankSheet(self)
-        self.bank_frame.pack(expand=True, fill="both")
+        self.import_frame = ImportSheet(self.top_frame)
+        self.import_frame.grid_configure(
+            column=0, row=1, sticky="nsew", ipadx=20, ipady=20
+        )
+
+        """
+        Details
+        """
+        self.details_frame = Details(self.top_frame)
+        self.details_frame.grid_configure(
+            row=1, column=1, sticky="nsew", ipadx=20, ipady=20
+        )
+
+        """
+        Bank Sheet
+        """
+        self.bank_frame = BankSheet(self.top_frame)
+        self.bank_frame.grid_configure(column=2, row=1, sticky="nsew")
+
+        """
+        Media Sheet
+        """
+        self.media_frame = MediaSheet(self.top_frame)
+        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="nsew")
 
         """
         Status Bar
         """
-        self.status = StatusBar(self)
-        self.status.pack(side="bottom", fill="x")
+        self.status = StatusBar(self.status_frame)
+        self.status.pack(fill="x")
 
 
 class OptionsFrame(ctk.CTkFrame):
@@ -55,6 +94,14 @@ class OptionsFrame(ctk.CTkFrame):
 
         self.validate_pre_edit: str = ""
         self.validate_bank_pre_edit: str = ""
+
+        """
+        Import CSV
+        """
+        self.import_csv_button = ctk.CTkButton(
+            self, text="Import CSV", command=self.import_csv_callback
+        )
+        self.import_csv_button.pack(side="left", pady=5, padx=5)
 
         """
         Target IP
@@ -101,6 +148,9 @@ class OptionsFrame(ctk.CTkFrame):
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
+    def import_csv_callback(self) -> None:
+        self._presenter.import_csv(str(tkinter.filedialog.LoadFileDialog(self)))
+
     def pull_callback(self) -> None:
         self._presenter.pull_media()
 
@@ -140,7 +190,7 @@ class BankSheet(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
-        Table Sheet
+        Bank Sheet
         """
         HEADERS = ["File Name"]
 
@@ -162,7 +212,95 @@ class BankSheet(ctk.CTkFrame):
         )
 
         self.sheet.enable_bindings()
-        self.sheet.pack(expand=True, fill="both", side="bottom")
+        self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+
+    def update_sheet(self, data) -> None:
+        self.sheet.set_sheet_data(
+            data=data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
+
+class Details(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        pass
+
+
+class ImportSheet(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        """
+        Import Sheet
+        """
+        HEADERS = ["File Name"]
+
+        self.sheet = Sheet(
+            self,
+            name="Bank_Data",
+            show_top_left=True,
+            headers=HEADERS,  # type: ignore
+            show_x_scrollbar=False,
+            total_columns=1,
+            align="c",
+            show_vertical_grid=False,
+            empty_horizontal=0,
+            empty_vertical=0,
+            auto_resize_columns=80,
+            displayed_columns=[0],
+            all_columns_displayed=False,
+            auto_resize_row_index=True,
+        )
+
+        self.sheet.enable_bindings()
+        self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+
+    def update_sheet(self, data) -> None:
+        self.sheet.set_sheet_data(
+            data=data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
+
+class MediaSheet(ctk.CTkFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        """
+        Import Sheet
+        """
+        HEADERS = ["File Name"]
+
+        self.sheet = Sheet(
+            self,
+            name="Bank_Data",
+            show_top_left=True,
+            headers=HEADERS,  # type: ignore
+            show_x_scrollbar=False,
+            total_columns=1,
+            align="c",
+            show_vertical_grid=False,
+            empty_horizontal=0,
+            empty_vertical=0,
+            auto_resize_columns=80,
+            displayed_columns=[0],
+            all_columns_displayed=False,
+            auto_resize_row_index=True,
+        )
+
+        self.sheet.enable_bindings()
+        self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
     def update_sheet(self, data) -> None:
         self.sheet.set_sheet_data(
