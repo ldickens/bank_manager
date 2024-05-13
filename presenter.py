@@ -9,7 +9,7 @@ from rest_api import Model
 class Presenter:
     def __init__(self, model: Model) -> None:
         self.model = model
-        self.view = App(self)
+        self.view = App(presenter=self)
         self.current_ip: str = "127.0.0.1"
 
     def run(self) -> None:
@@ -23,7 +23,7 @@ class Presenter:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
         if not self.model.media_loaded:
             if not self.model.init_database():
-                self.view.main_frame.status_frame.status_var.set("Failed to load media")
+                self.show_status("Failed to load media")
         self.get_bank()
 
     def get_bank(self, bank: int | None = None) -> None:
@@ -54,14 +54,26 @@ class Presenter:
         self.view.main_frame.status.status_var.set(msg)
 
     def import_csv(self, file_name: str) -> None:
-        data = parse_csv(file_name)
-        name_data = []
-        for entry in data:
-            name_data.append([entry[0]])
-        self.populate_import_sheet(name_data)
+        try:
+            data = parse_csv(file_name)
+            if len(data) == 0:
+                raise ValueError("No Entries Found")
+            name_data = []
+            for entry in data:
+                name_data.append([entry[0]])
+            self.populate_import_sheet(name_data)
+        except IndexError as e:
+            self.show_status("Failed to load file")
+        except ValueError as e:
+            self.show_status(str(e))
+        except TypeError as e:
+            self.show_status(str(e))
 
     def populate_import_sheet(self, data: list[list[str]]) -> None:
         try:
             self.view.main_frame.import_frame.update_sheet(data)
         except TypeError as e:
             self.show_status("Cancelled Load File")
+
+    def get_thumb(self, id: str):
+        self.model.thumbnail_request("/media/thumb/", id)

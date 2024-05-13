@@ -32,14 +32,14 @@ class MainWindow(ctk.CTkFrame):
         self.top_frame.pack(expand=True, fill="both")
 
         self.status_frame = ctk.CTkFrame(self)
-        self.status_frame.pack(fill="x")
+        self.status_frame.pack(fill="x", expand=True)
 
         self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
         self.top_frame.grid_rowconfigure(2)
-        self.top_frame.grid_columnconfigure(0, weight=1)
-        self.top_frame.grid_columnconfigure(1)
-        self.top_frame.grid_columnconfigure(2, weight=1)
+        self.top_frame.grid_columnconfigure(0, weight=2)
+        self.top_frame.grid_columnconfigure(1, weight=1)
+        self.top_frame.grid_columnconfigure(2, weight=2)
 
         """
         Options
@@ -82,8 +82,8 @@ class MainWindow(ctk.CTkFrame):
         """
         Status Bar
         """
-        self.status = StatusBar(self.status_frame)
-        self.status.pack(fill="x")
+        self.status = StatusBar(presenter=presenter, master=self.status_frame)
+        self.status.pack(fill="x", expand=True)
 
 
 class OptionsFrame(ctk.CTkFrame):
@@ -230,7 +230,36 @@ class BankSheet(ctk.CTkFrame):
 class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        pass
+
+        ctk.CTkLabel(self, text="File Name:").pack()
+        ctk.CTkLabel(self, text="File Size:").pack()
+        ctk.CTkLabel(self, text="File Type:").pack()
+        ctk.CTkLabel(self, text="Aspect Ratio:").pack()
+        ctk.CTkLabel(self, text="Audio Channels:").pack()
+        ctk.CTkLabel(self, text="Sample Rate:").pack()
+        ctk.CTkLabel(self, text="Duration:").pack()
+        ctk.CTkLabel(self, text="Frames:").pack()
+        ctk.CTkLabel(self, text="Framerate:").pack()
+        ctk.CTkLabel(self, text="Alpha:").pack()
+        ctk.CTkLabel(self, text="Height:").pack()
+        ctk.CTkLabel(self, text="ID:").pack()
+        ctk.CTkLabel(self, text="Map Indexes:").pack()
+        ctk.CTkLabel(self, text="Width:").pack()
+
+        # self.fileName = ctk.CTkLabel(self, text='File Name')
+        # self.fileSize = ctk.CTkLabel(self, text='File Size:')
+        # self.fileType = ctk.CTkLabel(self, text='File Type:')
+        # self.aspectRatio = ctk.CTkLabel(self, text='Aspect Ratio:')
+        # self.audioChannels = ctk.CTkLabel(self, text='Audio Channels:')
+        # self.audioSampleRate = ctk.CTkLabel(self, text='Sample Rate:')
+        # self.duration = ctk.CTkLabel(self, text='Duration:')
+        # self.durationFrames = ctk.CTkLabel(self, text='Frames:')
+        # self.fps = ctk.CTkLabel(self, text='Framerate:')
+        # self.hasAlpha = ctk.CTkLabel(self, text='Alpha:')
+        # self.height = ctk.CTkLabel(self, text='Height:')
+        # self.iD = ctk.CTkLabel(self, text='ID:')
+        # self.mapIndexes = ctk.CTkLabel(self, text='Map Indexes:')
+        # self.width = ctk.CTkLabel(self, text='Width:')
 
 
 class ImportSheet(ctk.CTkFrame):
@@ -297,7 +326,7 @@ class MediaSheet(ctk.CTkFrame):
             displayed_columns=[0],
             all_columns_displayed=False,
             auto_resize_row_index=True,
-            height=100,
+            height=150,
         )
 
         self.sheet.enable_bindings()
@@ -317,8 +346,18 @@ class MediaSheet(ctk.CTkFrame):
 
 
 class StatusBar(ctk.CTkFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, presenter: Presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._presenter = presenter
         self.status_var = StringVar()
         self.status = ctk.CTkLabel(self, textvariable=self.status_var)
         self.status.pack(side="right")
+
+        # debug buttons
+        self.button = ctk.CTkButton(self, command=self.get_thumb)
+        self.button.pack()
+
+    def get_thumb(self):
+        self._presenter.get_thumb(
+            "648c69e2-3879-4971-b3dd-f4c3dc5bf7d0:777b1d6abf7616f1817fa80fc7f8fa4d"
+        )

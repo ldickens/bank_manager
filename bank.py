@@ -57,6 +57,7 @@ class Media:
         mapIndexes: list[str] = [],
         timeUploaded: str = "",
         width: int = 0,
+        thumbnail: bytearray | None = None,
     ) -> None:
 
         self.aspectRatio: int = aspectRatio
@@ -75,6 +76,7 @@ class Media:
         self.mapIndexes: list[str] = mapIndexes
         self.timeUploaded: str = timeUploaded
         self.width: int = width
+        self.thumbnail: bytearray | None = thumbnail
 
         self._data: MEDIA_TYPE = {}
 

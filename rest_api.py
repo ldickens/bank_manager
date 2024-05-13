@@ -1,3 +1,4 @@
+from tkinter import PhotoImage
 from typing import Literal, TypedDict
 
 import requests
@@ -63,6 +64,14 @@ class MediaFileTypeTag(MediaFileType):
     tag: Literal["MediaFileType"]
 
 
+# class MediaThumb(TypedDict):  # Probably not needed anymore seperated the method away from make_request
+#     image: str
+
+
+# class MediaThumbTag(MediaThumb):
+#     tag: Literal["MediaThumbType"]
+
+
 valid_tag_types = MediaFileTypeTag | MediaMapTypeTag | MediaTypeTag
 
 """
@@ -90,7 +99,6 @@ class Model:
     def BASE_URL(self) -> str:
         return self._BASE_URL
 
-    # Add an IP address regex filter or look for a means of validating an IP address.
     @BASE_URL.setter
     def BASE_URL(self, new_ip: str) -> None:
         self._BASE_URL = new_ip
@@ -104,17 +112,19 @@ class Model:
                 return (endpoint.value, "MediaMapType")
 
             case Endpoints.GET_MEDIA_DATA:
-                endpoint_url = endpoint.value + f"/{idx}"
+                endpoint_url = endpoint.value + f"{idx}"
                 return (endpoint_url, "MediaType")
+
+            case Endpoints.GET_THUMB:
+                endpoint_url = endpoint.value + f"{idx}"
+                return (endpoint_url, "")
 
             case _:
                 raise NotImplementedError("Endpoint not implemented")
 
-        # method below is experiment
-
     def make_request(self, endpoint: str, tag: str) -> valid_tag_types | None:
         """
-        Includes the REST code and replies with a generic dict
+        Includes the REST code and replies with a generic valid type or None.
         """
         try:
             full_URL = self.BASE_URL + endpoint
@@ -127,6 +137,27 @@ class Model:
                 d_obj = response.json()
                 d_obj.update({"tag": tag})
                 return d_obj
+
+            raise ValueError("Response Error")
+
+        except ValueError as e:
+            print(f"Error {e}: {response.status_code}-{response.text}")
+
+        except requests.ConnectionError as e:
+            print(f"Error: {e}: Could not connect to the target host")
+
+    def thumbnail_request(self, endpoint: str, id: str):
+
+        try:
+            full_URL = self.BASE_URL + endpoint + id
+            response = requests.get(full_URL)
+
+            if (
+                response.status_code == 200
+                and "image/png" in response.headers["Content-Type"]
+            ):
+                print(type(response))
+                return response
 
             raise ValueError("Response Error")
 
