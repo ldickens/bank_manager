@@ -148,17 +148,16 @@ class Model:
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
 
-    def thumbnail_request(self, endpoint: str, id: str) -> Image.Image | None:
+    def thumbnail_request(self, endpoint: str) -> Image.Image | None:
 
         try:
-            full_URL = self.BASE_URL + endpoint + id
+            full_URL = self.BASE_URL + endpoint
             response = requests.get(full_URL)
 
             if (
                 response.status_code == 200
                 and "image/png" in response.headers["Content-Type"]
             ):
-                print(type(response))
                 return Image.open(BytesIO(response.content))
 
             raise ValueError("Response Error")
@@ -242,6 +241,17 @@ class Model:
                 bank, slot = self.calculate_index(idx)
                 self.banks[bank].add_clip(media, slot)
         return True
+
+    def get_bank_thumbnail(self, bank: int) -> None:
+        for media in self.banks[bank]._media_clips.values():
+            if media:
+                print(media.fileName)
+                idx = str(media.iD)
+                endpoint = self.validate_endpoint(Endpoints.GET_THUMB, idx=idx)
+                if endpoint:
+                    thumbnail = self.thumbnail_request(endpoint[0])
+                    if thumbnail:
+                        media.thumbnail = thumbnail
 
     def calculate_index(self, index: str) -> tuple[int, int]:
         bank, slot = divmod(int(index), 256)

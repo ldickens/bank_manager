@@ -184,6 +184,7 @@ class OptionsFrame(ctk.CTkFrame):
             self.bank_select_entry_var.set(self.validate_bank_pre_edit)
             self._presenter.show_status("Bank number not valid")
         self._presenter.get_bank(int(self.bank_select_entry_var.get()))
+        self._presenter.get_thumb(entry)
 
 
 class BankSheet(ctk.CTkFrame):
@@ -212,6 +213,8 @@ class BankSheet(ctk.CTkFrame):
         )
 
         self.sheet.enable_bindings()
+        self.sheet.row_index([x for x in range(256)])
+
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
     def update_sheet(self, data) -> None:
@@ -288,6 +291,8 @@ class ImportSheet(ctk.CTkFrame):
         )
 
         self.sheet.enable_bindings()
+        self.sheet.row_index([x for x in range(256)])
+
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
     def update_sheet(self, data) -> None:
@@ -319,6 +324,7 @@ class MediaSheet(ctk.CTkFrame):
             show_x_scrollbar=False,
             total_columns=1,
             align="c",
+            show_row_index=False,
             show_vertical_grid=False,
             empty_horizontal=0,
             empty_vertical=0,

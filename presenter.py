@@ -75,5 +75,5 @@ class Presenter:
         except TypeError as e:
             self.show_status("Cancelled Load File")
 
-    def get_thumb(self, id: str):
-        self.model.thumbnail_request("/media/thumb/", id)
+    def get_thumb(self, id: int) -> None:
+        self.model.get_bank_thumbnail(id)

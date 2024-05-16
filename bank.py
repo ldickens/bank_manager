@@ -4,6 +4,8 @@ import collections
 from re import A
 from typing import OrderedDict
 
+from PIL import Image
+
 MEDIA_TYPE = dict[str, int | str | bool | list[str]]
 
 
@@ -76,7 +78,7 @@ class Media:
         self.mapIndexes: list[str] = mapIndexes
         self.timeUploaded: str = timeUploaded
         self.width: int = width
-        self.thumbnail: bytearray | None = thumbnail
+        self.thumbnail: Image.Image | None = None
 
         self._data: MEDIA_TYPE = {}
 
