@@ -5,6 +5,7 @@ from tkinter import Event, StringVar
 from typing import Any
 
 import customtkinter as ctk
+from PIL import Image
 from tksheet import Sheet
 
 from _types import Presenter
@@ -70,7 +71,7 @@ class MainWindow(ctk.CTkFrame):
         """
         Bank Sheet
         """
-        self.bank_frame = BankSheet(self.top_frame)
+        self.bank_frame = BankSheet(self._presenter, master=self.top_frame)
         self.bank_frame.grid_configure(column=2, row=1, sticky="nsew")
 
         """
@@ -188,11 +189,13 @@ class OptionsFrame(ctk.CTkFrame):
 
 
 class BankSheet(ctk.CTkFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, presenter: Presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
         Bank Sheet
         """
+        self._presenter = presenter
+
         HEADERS = ["File Name"]
 
         self.sheet = Sheet(
@@ -212,8 +215,18 @@ class BankSheet(ctk.CTkFrame):
             auto_resize_row_index=True,
         )
 
-        self.sheet.enable_bindings()
+        self.sheet.enable_bindings(
+            "single select", "arrowkeys", "right_click_popup_menu"
+        )
         self.sheet.row_index([x for x in range(256)])
+
+        """
+        Bindings
+        """
+
+        self.sheet.extra_bindings(
+            "all_select_events", func=self._presenter.get_details()
+        )
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
@@ -234,22 +247,39 @@ class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        ctk.CTkLabel(self, text="File Name:").pack()
-        ctk.CTkLabel(self, text="File Size:").pack()
-        ctk.CTkLabel(self, text="File Type:").pack()
-        ctk.CTkLabel(self, text="Aspect Ratio:").pack()
-        ctk.CTkLabel(self, text="Audio Channels:").pack()
-        ctk.CTkLabel(self, text="Sample Rate:").pack()
-        ctk.CTkLabel(self, text="Duration:").pack()
-        ctk.CTkLabel(self, text="Frames:").pack()
-        ctk.CTkLabel(self, text="Framerate:").pack()
-        ctk.CTkLabel(self, text="Alpha:").pack()
-        ctk.CTkLabel(self, text="Height:").pack()
-        ctk.CTkLabel(self, text="ID:").pack()
-        ctk.CTkLabel(self, text="Map Indexes:").pack()
-        ctk.CTkLabel(self, text="Width:").pack()
+        self.thumbnail_property = ctk.CTkLabel(self)
+        self.text_properties = [
+            ctk.CTkLabel(self, text="File Name:"),
+            ctk.CTkLabel(self, text="File Size:"),
+            ctk.CTkLabel(self, text="File Type:"),
+            ctk.CTkLabel(self, text="Aspect Ratio:"),
+            ctk.CTkLabel(self, text="Audio Channels:"),
+            ctk.CTkLabel(self, text="Sample Rate:"),
+            ctk.CTkLabel(self, text="Duration:"),
+            ctk.CTkLabel(self, text="Frames:"),
+            ctk.CTkLabel(self, text="Framerate:"),
+            ctk.CTkLabel(self, text="Alpha:"),
+            ctk.CTkLabel(self, text="Height:"),
+            ctk.CTkLabel(self, text="ID:"),
+            ctk.CTkLabel(self, text="Map Indexes:"),
+            ctk.CTkLabel(self, text="Width:"),
+        ]
 
-        # self.fileName = ctk.CTkLabel(self, text='File Name')
+        self.pack_labels()
+
+    def pack_labels(self) -> None:
+        for label in self.text_properties:
+            label.pack()
+
+    def set_thumbnail(self, img: Image.Image) -> None:
+        self.thumbnail_property.configure(image=img)
+
+    def set_properties(self, properties: list[str]) -> None:
+        for label, text in zip(self.text_properties, properties):
+            new_text = label.cget(text)
+            label.configure(text=new_text + " " + text)
+
+        # self.fileName = ctk.CTkLabel(self, text='File Name:')
         # self.fileSize = ctk.CTkLabel(self, text='File Size:')
         # self.fileType = ctk.CTkLabel(self, text='File Type:')
         # self.aspectRatio = ctk.CTkLabel(self, text='Aspect Ratio:')
