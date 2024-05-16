@@ -1,7 +1,9 @@
+from io import BytesIO
 from tkinter import PhotoImage
 from typing import Literal, TypedDict
 
 import requests
+from PIL import Image
 
 from bank import Bank, Media
 from endpoint_enums import Endpoints
@@ -146,7 +148,7 @@ class Model:
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
 
-    def thumbnail_request(self, endpoint: str, id: str):
+    def thumbnail_request(self, endpoint: str, id: str) -> Image.Image | None:
 
         try:
             full_URL = self.BASE_URL + endpoint + id
@@ -157,7 +159,7 @@ class Model:
                 and "image/png" in response.headers["Content-Type"]
             ):
                 print(type(response))
-                return response
+                return Image.open(BytesIO(response.content))
 
             raise ValueError("Response Error")
 
@@ -166,6 +168,9 @@ class Model:
 
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
+
+        except OSError as e:
+            print(f"Failed to load image: {e}")
 
     def validate_media_type(self, data: valid_tag_types) -> MediaTypeTag | None:
         if data["tag"] == "MediaType":

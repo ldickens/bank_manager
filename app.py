@@ -32,7 +32,7 @@ class MainWindow(ctk.CTkFrame):
         self.top_frame.pack(expand=True, fill="both")
 
         self.status_frame = ctk.CTkFrame(self)
-        self.status_frame.pack(fill="x", expand=True)
+        self.status_frame.pack(fill="x")
 
         self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
@@ -83,7 +83,7 @@ class MainWindow(ctk.CTkFrame):
         Status Bar
         """
         self.status = StatusBar(presenter=presenter, master=self.status_frame)
-        self.status.pack(fill="x", expand=True)
+        self.status.pack(fill="x")
 
 
 class OptionsFrame(ctk.CTkFrame):
