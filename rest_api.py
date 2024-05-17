@@ -104,7 +104,9 @@ class Model:
     def BASE_URL(self, new_ip: str) -> None:
         self._BASE_URL = new_ip
 
-    def validate_endpoint(self, endpoint: Endpoints, idx: str = "") -> tuple[str, str]:
+    def validate_endpoint(
+        self, endpoint: Endpoints, media_idx: str = "", map_idx: int = 0
+    ) -> tuple[str, str]:
         match endpoint:
             case Endpoints.GET_MEDIA:
                 return (endpoint.value, "MediaFileType")
@@ -113,11 +115,15 @@ class Model:
                 return (endpoint.value, "MediaMapType")
 
             case Endpoints.GET_MEDIA_DATA:
-                endpoint_url = endpoint.value + f"{idx}"
+                endpoint_url = endpoint.value + f"{media_idx}"
                 return (endpoint_url, "MediaType")
 
             case Endpoints.GET_THUMB:
-                endpoint_url = endpoint.value + f"{idx}"
+                endpoint_url = endpoint.value + f"{media_idx}"
+                return (endpoint_url, "")
+
+            case Endpoints.PUT_ENTRY:
+                endpoint_url = endpoint.value + f"{map_idx}" + "/" + f"{media_idx}"
                 return (endpoint_url, "")
 
             case _:
@@ -170,6 +176,20 @@ class Model:
         except OSError as e:
             print(f"Failed to load image: {e}")
 
+    def put_media_entry_request(self, endpoint: str) -> bool | None:
+
+        try:
+            full_URL = self.BASE_URL + endpoint
+            response = requests.put(full_URL)
+
+            if response.status_code == 200:
+                return True
+
+            raise requests.ConnectionError(response.status_code, "\n", response.text)
+
+        except requests.ConnectionError as e:
+            print(f"Error: {e}: Could not connect to the target host")
+
     def validate_media_type(self, data: valid_tag_types) -> MediaTypeTag | None:
         if data["tag"] == "MediaType":
             return data
@@ -205,7 +225,9 @@ class Model:
             return self.init_banks()
         return False
 
-    def init_media(self) -> bool:
+    def init_media(
+        self,
+    ) -> bool:  # Should inverse the if statements for less indentation
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
         if endpoint != None:
             media_data = self.make_request(*endpoint)
@@ -245,11 +267,24 @@ class Model:
         for media in self.banks[bank]._media_clips.values():
             if media:
                 idx = str(media.iD)
-                endpoint = self.validate_endpoint(Endpoints.GET_THUMB, idx=idx)
+                endpoint = self.validate_endpoint(Endpoints.GET_THUMB, media_idx=idx)
                 if endpoint:
                     thumbnail = self.thumbnail_request(endpoint[0])
                     if thumbnail:
                         media.thumbnail = thumbnail
+
+    def push_media_index(self, filename: str, map_idx: int) -> bool:
+        media_idx = ""
+        for media in self.media:
+            if filename == media.fileName:
+                media_idx = media.iD
+        url = self.validate_endpoint(
+            Endpoints.POST_MEDIA, media_idx=media_idx, map_idx=map_idx
+        )[0]
+
+        if self.put_media_entry_request(url):
+            return True
+        return False
 
     def calculate_index(self, index: str) -> tuple[int, int]:
         bank, slot = divmod(int(index), 256)

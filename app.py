@@ -1,5 +1,6 @@
 import tkinter
 import tkinter.filedialog
+from os import getcwd
 from re import fullmatch
 from tkinter import Event, StringVar
 from typing import Any
@@ -18,6 +19,7 @@ class App(ctk.CTk):
         self.geometry("1440x780")
         self.title("Bank Manager")
         self._presenter = presenter
+        ctk.set_default_color_theme("\\".join([getcwd(), "theme.json"]))
 
         self.main_frame = MainWindow(self, presenter)
         self.main_frame.pack(expand=True, fill="both")
@@ -49,13 +51,13 @@ class MainWindow(ctk.CTkFrame):
             self._presenter, master=self.top_frame, fg_color="transparent"
         )
         self.options_frame.grid_configure(
-            column=0, columnspan=3, row=0, sticky="nsew", ipadx=20, ipady=20
+            column=0, columnspan=3, row=0, sticky="ns", ipady=20
         )
 
         """
         Import Sheet
         """
-        self.import_frame = ImportSheet(self.top_frame)
+        self.import_frame = ImportSheet(presenter=presenter, master=self.top_frame)
         self.import_frame.grid_configure(
             column=0, row=1, sticky="nsew", ipadx=20, ipady=20
         )
@@ -65,7 +67,7 @@ class MainWindow(ctk.CTkFrame):
         """
         self.details_frame = Details(self.top_frame, width=300)
         self.details_frame.grid_configure(
-            row=1, column=1, sticky="ew", ipadx=20, ipady=20
+            row=1, column=1, sticky="nsew", ipadx=20, ipady=20
         )
 
         """
@@ -148,6 +150,10 @@ class OptionsFrame(ctk.CTkFrame):
             self, text="Pull", command=self.pull_callback
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
+
+        """
+        Upload Media
+        """
 
     def import_csv_callback(self) -> None:
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
@@ -304,11 +310,12 @@ class Details(ctk.CTkFrame):
 
 
 class ImportSheet(ctk.CTkFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, presenter: Presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
         Import Sheet
         """
+        self._presenter = presenter
         HEADERS = ["File Name"]
 
         self.sheet = Sheet(
@@ -333,7 +340,7 @@ class ImportSheet(ctk.CTkFrame):
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
-    def update_sheet(self, data) -> None:
+    def update_sheet(self, data: list[list[str]]) -> None:
         self.sheet.set_sheet_data(
             data=data,
             reset_col_positions=True,
@@ -344,6 +351,15 @@ class ImportSheet(ctk.CTkFrame):
             keep_formatting=False,
             delete_options=True,
         )
+        for idx, list in enumerate(data):
+            if self._presenter.media_in_library(list[0]):
+                self.sheet.span(idx, "highlight", overwrite=True, end=True).highlight(
+                    bg="green"
+                )
+            else:
+                self.sheet.span(idx, "highlight", overwrite=True, end=True).highlight(
+                    bg="red"
+                )
 
 
 class MediaSheet(ctk.CTkFrame):

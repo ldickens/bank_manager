@@ -29,6 +29,7 @@ class Presenter:
         if not self.model.media_loaded:
             if not self.model.init_database():
                 self.show_status("Failed to load media")
+        self.update_media_sheet()
         self.get_bank()
 
     def get_bank(self, bank: int | None = None) -> None:
@@ -45,10 +46,16 @@ class Presenter:
                 media_name.append(["None"])
             else:
                 media_name.append([media["fileName"]])
-        self.update_sheet(media_name)
+        self.update_bank_sheet(media_name)
 
-    def update_sheet(self, data: list[list[str]]) -> None:
+    def update_bank_sheet(self, data: list[list[str]]) -> None:
         self.view.main_frame.bank_frame.update_sheet(data)
+
+    def update_media_sheet(self) -> None:
+        all_titles = []
+        for media in self.model.media:
+            all_titles.append([media.fileName])
+        self.view.main_frame.media_frame.update_sheet(all_titles)
 
     def set_target_ip(self, target_ip: str) -> None:
         self.current_ip = target_ip
@@ -79,6 +86,13 @@ class Presenter:
             self.view.main_frame.import_frame.update_sheet(data)
         except TypeError as e:
             self.show_status("Cancelled Load File")
+
+    def media_in_library(self, media_title: str) -> bool:
+        for media in self.model.media:
+            if media_title == media.fileName:
+                return True
+
+        return False
 
     def get_thumb(self) -> None:
         self.model.get_bank_thumbnail(
