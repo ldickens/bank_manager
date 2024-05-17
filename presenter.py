@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+from typing import NewType
+
+from PIL import Image
+
 from app import App
+from bank import MEDIA_TYPE
 from csv_import import parse_csv
 from endpoint_enums import Endpoints
 from rest_api import Model
@@ -75,5 +80,35 @@ class Presenter:
         except TypeError as e:
             self.show_status("Cancelled Load File")
 
-    def get_thumb(self, id: int) -> None:
-        self.model.get_bank_thumbnail(id)
+    def get_thumb(self) -> None:
+        self.model.get_bank_thumbnail(
+            int(self.view.main_frame.options_frame.bank_select_entry_var.get())
+        )
+
+    def get_media_details(self, row_idx: int) -> None:
+        bank = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
+        clip = int(row_idx)
+        if media := self.model.banks[bank].get_media_clip(clip):
+            if img := media.thumbnail:
+                self.set_UI_media_props(img, media.data)
+
+    def set_UI_media_props(
+        self, thumbnail: Image.Image, properties: MEDIA_TYPE
+    ) -> None:
+        formatted_properties = [
+            str(properties["fileName"]),
+            str(properties["fileSize"]),
+            str(properties["fileType"]),
+            str(properties["aspectRatio"]),
+            str(properties["audioChannels"]),
+            str(properties["audioSampleRate"]),
+            str(properties["duration"]),
+            str(properties["durationFrames"]),
+            "frames TBD",
+            str(properties["hasAlpha"]),
+            str(properties["height"]),
+            str(properties["width"]),
+            str(properties["mapIndexes"]),
+        ]
+        self.view.main_frame.details_frame.set_thumbnail(thumbnail)
+        self.view.main_frame.details_frame.set_properties(formatted_properties)

@@ -15,7 +15,7 @@ class App(ctk.CTk):
     def __init__(self, presenter: Presenter) -> None:
         super().__init__()  # type: ignore
 
-        self.geometry("800x500")
+        self.geometry("1440x780")
         self.title("Bank Manager")
         self._presenter = presenter
 
@@ -38,9 +38,9 @@ class MainWindow(ctk.CTkFrame):
         self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
         self.top_frame.grid_rowconfigure(2)
-        self.top_frame.grid_columnconfigure(0, weight=2)
-        self.top_frame.grid_columnconfigure(1, weight=1)
-        self.top_frame.grid_columnconfigure(2, weight=2)
+        self.top_frame.grid_columnconfigure(0, weight=1)
+        self.top_frame.grid_columnconfigure(1)
+        self.top_frame.grid_columnconfigure(2, weight=1)
 
         """
         Options
@@ -63,9 +63,9 @@ class MainWindow(ctk.CTkFrame):
         """
         Details
         """
-        self.details_frame = Details(self.top_frame)
+        self.details_frame = Details(self.top_frame, width=300)
         self.details_frame.grid_configure(
-            row=1, column=1, sticky="nsew", ipadx=20, ipady=20
+            row=1, column=1, sticky="ew", ipadx=20, ipady=20
         )
 
         """
@@ -154,6 +154,7 @@ class OptionsFrame(ctk.CTkFrame):
 
     def pull_callback(self) -> None:
         self._presenter.pull_media()
+        self._presenter.get_thumb()
 
     def validate_ip_input_focusin(self, event: Event) -> None:
         self.validate_pre_edit = self.target_ip_var.get()
@@ -184,8 +185,9 @@ class OptionsFrame(ctk.CTkFrame):
         if entry > 256 or entry < 0:
             self.bank_select_entry_var.set(self.validate_bank_pre_edit)
             self._presenter.show_status("Bank number not valid")
-        self._presenter.get_bank(int(self.bank_select_entry_var.get()))
-        self._presenter.get_thumb(entry)
+        bank_idx = int(self.bank_select_entry_var.get())
+        self._presenter.get_bank(bank_idx)
+        self._presenter.get_thumb()
 
 
 class BankSheet(ctk.CTkFrame):
@@ -216,7 +218,7 @@ class BankSheet(ctk.CTkFrame):
         )
 
         self.sheet.enable_bindings(
-            "single select", "arrowkeys", "right_click_popup_menu"
+            "single_select", "arrowkeys", "right_click_popup_menu"
         )
         self.sheet.row_index([x for x in range(256)])
 
@@ -224,11 +226,14 @@ class BankSheet(ctk.CTkFrame):
         Bindings
         """
 
-        self.sheet.extra_bindings(
-            "all_select_events", func=self._presenter.get_details()
-        )
+        self.sheet.extra_bindings("all_select_events", func=self.select_event_callback)
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+
+    def select_event_callback(self, _: Event):
+        if selected := self.sheet.get_currently_selected():
+            row = selected[0]
+            self._presenter.get_media_details(row)
 
     def update_sheet(self, data) -> None:
         self.sheet.set_sheet_data(
@@ -247,7 +252,9 @@ class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.thumbnail_property = ctk.CTkLabel(self)
+        self.thumbnail_property = ctk.CTkLabel(
+            self, text="", width=128, height=128, fg_color="black"
+        )
         self.text_properties = [
             ctk.CTkLabel(self, text="File Name:"),
             ctk.CTkLabel(self, text="File Size:"),
@@ -260,11 +267,11 @@ class Details(ctk.CTkFrame):
             ctk.CTkLabel(self, text="Framerate:"),
             ctk.CTkLabel(self, text="Alpha:"),
             ctk.CTkLabel(self, text="Height:"),
-            ctk.CTkLabel(self, text="ID:"),
-            ctk.CTkLabel(self, text="Map Indexes:"),
             ctk.CTkLabel(self, text="Width:"),
+            ctk.CTkLabel(self, text="Map Indexes:"),
         ]
 
+        self.thumbnail_property.pack()
         self.pack_labels()
 
     def pack_labels(self) -> None:
@@ -272,12 +279,13 @@ class Details(ctk.CTkFrame):
             label.pack()
 
     def set_thumbnail(self, img: Image.Image) -> None:
-        self.thumbnail_property.configure(image=img)
+        thumbnail = ctk.CTkImage(light_image=img, size=(128, 128))
+        self.thumbnail_property.configure(image=thumbnail, require_redraw=True)
 
     def set_properties(self, properties: list[str]) -> None:
         for label, text in zip(self.text_properties, properties):
-            new_text = label.cget(text)
-            label.configure(text=new_text + " " + text)
+            new_text = label.cget("text").split(":")[0]
+            label.configure(text=new_text + ": " + text, require_redraw=True)
 
         # self.fileName = ctk.CTkLabel(self, text='File Name:')
         # self.fileSize = ctk.CTkLabel(self, text='File Size:')
@@ -389,11 +397,11 @@ class StatusBar(ctk.CTkFrame):
         self.status = ctk.CTkLabel(self, textvariable=self.status_var)
         self.status.pack(side="right")
 
-        # debug buttons
-        self.button = ctk.CTkButton(self, command=self.get_thumb)
-        self.button.pack()
+    #     # debug buttons
+    #     self.button = ctk.CTkButton(self, command=self.get_thumb)
+    #     self.button.pack()
 
-    def get_thumb(self):
-        self._presenter.get_thumb(
-            "648c69e2-3879-4971-b3dd-f4c3dc5bf7d0:777b1d6abf7616f1817fa80fc7f8fa4d"
-        )
+    # def get_thumb(self):
+    #     self._presenter.get_thumb(
+    #         "648c69e2-3879-4971-b3dd-f4c3dc5bf7d0:777b1d6abf7616f1817fa80fc7f8fa4d"
+    #    )

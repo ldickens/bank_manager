@@ -1,5 +1,4 @@
 from io import BytesIO
-from tkinter import PhotoImage
 from typing import Literal, TypedDict
 
 import requests
@@ -245,7 +244,6 @@ class Model:
     def get_bank_thumbnail(self, bank: int) -> None:
         for media in self.banks[bank]._media_clips.values():
             if media:
-                print(media.fileName)
                 idx = str(media.iD)
                 endpoint = self.validate_endpoint(Endpoints.GET_THUMB, idx=idx)
                 if endpoint:

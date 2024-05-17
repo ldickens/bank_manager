@@ -28,6 +28,10 @@ class Bank:
 
         return output
 
+    def get_media_clip(self, idx: int) -> Media | None:
+        if media := self._media_clips[idx]:
+            return media
+
     @property
     def media_clips(self) -> list[MEDIA_TYPE]:
         media_data = []
@@ -78,7 +82,7 @@ class Media:
         self.mapIndexes: list[str] = mapIndexes
         self.timeUploaded: str = timeUploaded
         self.width: int = width
-        self.thumbnail: Image.Image | None = None
+        self._thumbnail: Image.Image | None = None
 
         self._data: MEDIA_TYPE = {}
 
@@ -103,6 +107,14 @@ class Media:
             "timeUploaded": self.timeUploaded,
             "width": self.width,
         }
+
+    @property
+    def thumbnail(self) -> Image.Image | None:
+        return self._thumbnail
+
+    @thumbnail.setter
+    def thumbnail(self, img: Image.Image) -> None:
+        self._thumbnail = img
 
     def __repr__(self) -> str:
         return str(self.data)
