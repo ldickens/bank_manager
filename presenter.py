@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from time import sleep
 from typing import NewType
 
 from PIL import Image
@@ -24,12 +25,15 @@ class Presenter:
         return self.model.init_database()
 
     def pull_media(self) -> None:
+        print("Pulling Media")
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
         if not self.model.media_loaded:
             if not self.model.init_database():
                 self.show_status("Failed to load media")
+        print("Updating Media sheet")
         self.update_media_sheet()
+
         self.get_bank()
 
     def get_bank(self, bank: int | None = None) -> None:
@@ -46,6 +50,7 @@ class Presenter:
                 media_name.append(["None"])
             else:
                 media_name.append([media["fileName"]])
+        print("Updating Bank Sheet")
         self.update_bank_sheet(media_name)
 
     def update_bank_sheet(self, data: list[list[str]]) -> None:
@@ -126,3 +131,26 @@ class Presenter:
         ]
         self.view.main_frame.details_frame.set_thumbnail(thumbnail)
         self.view.main_frame.details_frame.set_properties(formatted_properties)
+
+    def update_bank(self) -> None:
+        bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
+        media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
+        print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
+
+        map_idx = int(bank_idx * 256)
+
+        success = 0
+        fail = 0
+        for title in media_titles:
+            if self.model.push_media_index(str(title), map_idx):
+                success += 1
+            else:
+                fail += 1
+            map_idx += 1
+
+        sleep(0.4)
+        self.pull_media()
+        # self.get_thumb() # Don't think this is necessary
+        self.show_status("Transfer Complete")
+
+        print(f"File Transfer Complete: Success = {success}, Failure = {fail}")

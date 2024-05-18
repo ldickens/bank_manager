@@ -39,7 +39,8 @@ class MainWindow(ctk.CTkFrame):
 
         self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
-        self.top_frame.grid_rowconfigure(2)
+        self.top_frame.grid_rowconfigure(2, weight=1)
+        self.top_frame.grid_rowconfigure(3)
         self.top_frame.grid_columnconfigure(0, weight=1)
         self.top_frame.grid_columnconfigure(1)
         self.top_frame.grid_columnconfigure(2, weight=1)
@@ -50,9 +51,7 @@ class MainWindow(ctk.CTkFrame):
         self.options_frame = OptionsFrame(
             self._presenter, master=self.top_frame, fg_color="transparent"
         )
-        self.options_frame.grid_configure(
-            column=0, columnspan=3, row=0, sticky="ns", ipady=20
-        )
+        self.options_frame.grid_configure(column=0, columnspan=3, row=0, sticky="ns")
 
         """
         Import Sheet
@@ -80,13 +79,15 @@ class MainWindow(ctk.CTkFrame):
         Media Sheet
         """
         self.media_frame = MediaSheet(self.top_frame)
-        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="ew")
+        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="nsew")
 
         """
         Status Bar
         """
-        self.status = StatusBar(presenter=presenter, master=self.status_frame)
-        self.status.pack(fill="x")
+        self.status = StatusBar(
+            presenter=presenter, master=self.status_frame, fg_color="red"
+        )
+        self.status.grid_configure(column=0, columnspan=3, row=3, sticky="ew")
 
 
 class OptionsFrame(ctk.CTkFrame):
@@ -152,8 +153,15 @@ class OptionsFrame(ctk.CTkFrame):
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
         """
-        Upload Media
+        Update Bank
         """
+        self.update_bank_button = ctk.CTkButton(
+            self, text="Push", command=self.update_bank_callback
+        )
+        self.update_bank_button.pack(side="left", pady=5, padx=5)
+
+    def update_bank_callback(self) -> None:
+        self._presenter.update_bank()
 
     def import_csv_callback(self) -> None:
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
@@ -409,9 +417,12 @@ class StatusBar(ctk.CTkFrame):
     def __init__(self, presenter: Presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._presenter = presenter
+
         self.status_var = StringVar()
-        self.status = ctk.CTkLabel(self, textvariable=self.status_var)
-        self.status.pack(side="right")
+        self.status = ctk.CTkLabel(
+            self, textvariable=self.status_var, fg_color="transparent"
+        )
+        self.status.pack(side="right", expand=True, fill="x")
 
     #     # debug buttons
     #     self.button = ctk.CTkButton(self, command=self.get_thumb)

@@ -278,12 +278,12 @@ class Model:
         for media in self.media:
             if filename == media.fileName:
                 media_idx = media.iD
-        url = self.validate_endpoint(
-            Endpoints.POST_MEDIA, media_idx=media_idx, map_idx=map_idx
-        )[0]
-
-        if self.put_media_entry_request(url):
-            return True
+                url = self.validate_endpoint(
+                    Endpoints.PUT_ENTRY, media_idx=media_idx, map_idx=map_idx
+                )[0]
+                if self.put_media_entry_request(url):
+                    return True
+        print("Media not found")
         return False
 
     def calculate_index(self, index: str) -> tuple[int, int]:
