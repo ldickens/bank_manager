@@ -26,12 +26,15 @@ class Presenter:
 
     def pull_media(self) -> None:
         print("Pulling Media")
+
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
+
         if not self.model.media_loaded:
             if not self.model.init_database():
                 self.show_status("Failed to load media")
                 return
+
         print("Updating Media sheet")
         self.update_media_sheet()
 
@@ -40,6 +43,7 @@ class Presenter:
         # checks to see if import sheet entries are in the media_library
         if data := self.view.main_frame.import_frame.sheet.get_column_data(0):
             data_list = []
+
             for item in data:
                 data_list.append([str(item)])
             self.view.main_frame.import_frame.media_exists(data_list)
@@ -145,10 +149,11 @@ class Presenter:
         media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
         print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
 
-        map_idx = int(bank_idx * 256)
+        map_idx = int(int(bank_idx) * 256)
 
         success = 0
         fail = 0
+
         for title in media_titles:
             if self.model.push_media_index(str(title), map_idx):
                 success += 1
@@ -156,11 +161,17 @@ class Presenter:
                 fail += 1
             map_idx += 1
 
-        sleep(
-            0.4
-        )  # Replace with a recurring check that both the import sheet and bank sheets match
-        self.pull_media()
-        # self.get_thumb() # Don't think this is necessary
         self.show_status("Transfer Complete")
-
         print(f"File Transfer Complete: Success = {success}, Failure = {fail}")
+
+    def verify_match(self) -> None:
+        # Update bank sheet after changes
+        bank = self.view.main_frame.bank_frame.sheet.get_column_data(0)
+        csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
+
+        while bank[0 : len(csv)] != csv:
+            self.pull_media()
+            self.view.update_idletasks()
+            bank = self.view.main_frame.bank_frame.sheet.get_column_data(0)
+            csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
+            sleep(0.05)

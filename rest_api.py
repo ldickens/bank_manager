@@ -311,6 +311,7 @@ class Model:
     def push_media_index(self, filename: str, map_idx: int) -> bool:
         media_idx = ""
         for media in self.media:
+            # No filename in the import list.
             if filename == "":
                 if not self.banks[map_idx // 256].get_media_clip(map_idx // 256):
                     print(f"Map Entry {map_idx}: Empty")
@@ -322,6 +323,7 @@ class Model:
                     print(f"Update Map Entry {map_idx}: Remove Entry Success")
                     return True
 
+            # search for filename in media library stored in local memory
             if filename == media.fileName:
                 media_idx = media.iD
                 url = self.validate_endpoint(
