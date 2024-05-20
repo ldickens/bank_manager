@@ -126,6 +126,10 @@ class Model:
                 endpoint_url = endpoint.value + f"{map_idx}" + "/" + f"{media_idx}"
                 return (endpoint_url, "")
 
+            case Endpoints.DEL_ENTRY:
+                endpoint_url = endpoint.value + f"{map_idx}"
+                return (endpoint_url, "")
+
             case _:
                 raise NotImplementedError("Endpoint not implemented")
 
@@ -185,10 +189,41 @@ class Model:
             if response.status_code == 200:
                 return True
 
+            if response.status_code == 400:
+                raise ValueError(response.text)
+
+            if response.status_code == 404:
+                raise ValueError(response.text)
+
             raise requests.ConnectionError(response.status_code, "\n", response.text)
 
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
+
+        except ValueError as e:
+            print(f"Error: {e}")
+
+    def delete_media_entry_request(self, endpoint: str) -> bool | None:
+        try:
+            full_URL = self.BASE_URL + endpoint
+            response = requests.delete(full_URL)
+
+            if response.status_code == 200:
+                return True
+
+            if response.status_code == 400:
+                raise ValueError(response.text)
+
+            if response.status_code == 404:
+                raise ValueError(response.text)
+
+            raise requests.ConnectionError(response.status_code, "\n", response.text)
+
+        except requests.ConnectionError as e:
+            print(f"Error: {e}: Could not connect to the target host")
+
+        except ValueError as e:
+            print(f"Error: {e}")
 
     def validate_media_type(self, data: valid_tag_types) -> MediaTypeTag | None:
         if data["tag"] == "MediaType":
@@ -276,14 +311,29 @@ class Model:
     def push_media_index(self, filename: str, map_idx: int) -> bool:
         media_idx = ""
         for media in self.media:
+            if filename == "":
+                if not self.banks[map_idx // 256].get_media_clip(map_idx // 256):
+                    print(f"Map Entry {map_idx}: Empty")
+                    return True
+
+                url = self.validate_endpoint(Endpoints.DEL_ENTRY, map_idx=map_idx)[0]
+
+                if self.delete_media_entry_request(url):
+                    print(f"Update Map Entry {map_idx}: Remove Entry Success")
+                    return True
+
             if filename == media.fileName:
                 media_idx = media.iD
                 url = self.validate_endpoint(
                     Endpoints.PUT_ENTRY, media_idx=media_idx, map_idx=map_idx
                 )[0]
+
                 if self.put_media_entry_request(url):
+                    print(f"Update Map Entry {map_idx}: Change Media Success")
                     return True
-        print("Media not found")
+
+        print(f"Map Entry {map_idx} - Media not found: {filename}")
+
         return False
 
     def calculate_index(self, index: str) -> tuple[int, int]:

@@ -64,7 +64,7 @@ class MainWindow(ctk.CTkFrame):
         """
         Details
         """
-        self.details_frame = Details(self.top_frame, width=300)
+        self.details_frame = Details(self.top_frame)
         self.details_frame.grid_configure(
             row=1, column=1, sticky="nsew", ipadx=20, ipady=20
         )
@@ -84,9 +84,7 @@ class MainWindow(ctk.CTkFrame):
         """
         Status Bar
         """
-        self.status = StatusBar(
-            presenter=presenter, master=self.status_frame, fg_color="red"
-        )
+        self.status = StatusBar(presenter=presenter, master=self.status_frame)
         self.status.grid_configure(column=0, columnspan=3, row=3, sticky="ew")
 
 
@@ -153,15 +151,16 @@ class OptionsFrame(ctk.CTkFrame):
         self.pull_media_button.pack(side="left", pady=5, padx=5)
 
         """
-        Update Bank
+        Push Media 
         """
         self.update_bank_button = ctk.CTkButton(
-            self, text="Push", command=self.update_bank_callback
+            self, text="Push", command=self.push_media_callback
         )
         self.update_bank_button.pack(side="left", pady=5, padx=5)
 
-    def update_bank_callback(self) -> None:
+    def push_media_callback(self) -> None:
         self._presenter.update_bank()
+        self._presenter.get_thumb()
 
     def import_csv_callback(self) -> None:
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
@@ -270,7 +269,7 @@ class Details(ctk.CTkFrame):
             self, text="", width=128, height=128, fg_color="black"
         )
         self.text_properties = [
-            ctk.CTkLabel(self, text="File Name:"),
+            ctk.CTkLabel(self, text="File Name:", width=360),
             ctk.CTkLabel(self, text="File Size:"),
             ctk.CTkLabel(self, text="File Type:"),
             ctk.CTkLabel(self, text="Aspect Ratio:"),
@@ -290,7 +289,7 @@ class Details(ctk.CTkFrame):
 
     def pack_labels(self) -> None:
         for label in self.text_properties:
-            label.pack()
+            label.pack(expand=True, fill="x")
 
     def set_thumbnail(self, img: Image.Image) -> None:
         thumbnail = ctk.CTkImage(light_image=img, size=(128, 128))
@@ -299,6 +298,8 @@ class Details(ctk.CTkFrame):
     def set_properties(self, properties: list[str]) -> None:
         for label, text in zip(self.text_properties, properties):
             new_text = label.cget("text").split(":")[0]
+            if len(text) > 40:
+                text = text[0:39] + "..."
             label.configure(text=new_text + ": " + text, require_redraw=True)
 
         # self.fileName = ctk.CTkLabel(self, text='File Name:')
@@ -359,6 +360,9 @@ class ImportSheet(ctk.CTkFrame):
             keep_formatting=False,
             delete_options=True,
         )
+        self.media_exists(data)
+
+    def media_exists(self, data: list[list[str]]) -> None:
         for idx, list in enumerate(data):
             if self._presenter.media_in_library(list[0]):
                 self.sheet.span(idx, "highlight", overwrite=True, end=True).highlight(

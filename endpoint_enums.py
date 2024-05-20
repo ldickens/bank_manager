@@ -9,3 +9,4 @@ class Endpoints(Enum):
     POST_MEDIA = "/media/upload"
     GET_THUMB = "/media/thumb/"
     PUT_ENTRY = "/media/addmapentry/"
+    DEL_ENTRY = "/media/deletemapentry/"

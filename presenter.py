@@ -31,10 +31,18 @@ class Presenter:
         if not self.model.media_loaded:
             if not self.model.init_database():
                 self.show_status("Failed to load media")
+                return
         print("Updating Media sheet")
         self.update_media_sheet()
 
         self.get_bank()
+
+        # checks to see if import sheet entries are in the media_library
+        if data := self.view.main_frame.import_frame.sheet.get_column_data(0):
+            data_list = []
+            for item in data:
+                data_list.append([str(item)])
+            self.view.main_frame.import_frame.media_exists(data_list)
 
     def get_bank(self, bank: int | None = None) -> None:
         if bank == None:
@@ -148,7 +156,9 @@ class Presenter:
                 fail += 1
             map_idx += 1
 
-        sleep(0.4)
+        sleep(
+            0.4
+        )  # Replace with a recurring check that both the import sheet and bank sheets match
         self.pull_media()
         # self.get_thumb() # Don't think this is necessary
         self.show_status("Transfer Complete")
