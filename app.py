@@ -73,7 +73,9 @@ class MainWindow(ctk.CTkFrame):
         Bank Sheet
         """
         self.bank_frame = BankSheet(self._presenter, master=self.top_frame)
-        self.bank_frame.grid_configure(column=2, row=1, sticky="nsew")
+        self.bank_frame.grid_configure(
+            column=2, row=1, sticky="nsew", ipadx=20, ipady=20
+        )
 
         """
         Media Sheet
@@ -229,6 +231,30 @@ class BankSheet(ctk.CTkFrame):
             displayed_columns=[0],  # Hide the MediaID Column
             all_columns_displayed=False,
             auto_resize_row_index=True,
+            table_bg="#2c2c2d",  # bg colours
+            header_bg="#2c2c2d",
+            index_bg="#2c2c2d",
+            header_selected_cells_bg="#2c2c2d",
+            index_selected_cells_bg="#2c2c2d",
+            vertical_scroll_background="#2c2c2d",
+            top_left_bg="#2c2c2d",
+            header_fg="white",  # fg colours
+            table_fg="white",
+            index_fg="white",
+            header_grid_fg="black",
+            table_grid_fg="black",
+            index_grid_fg="black",
+            header_selected_cells_fg="white",
+            index_selected_cells_fg="white",
+            table_selected_cells_fg="white",
+            outline_thickness=1,  # highlight colours
+            outline_color="#474747",
+            scrollbar_show_arrows=False,  # Scrollbar options
+            scrollbar_theme_inheritance="default",
+            vertical_scroll_active_bg="#767679",
+            vertical_scroll_not_active_bg="#767679",
+            vertical_scroll_pressed_bg="#767679",
+            vertical_scroll_troughcolor="#2c2c2d",
         )
 
         self.sheet.enable_bindings(
@@ -266,25 +292,32 @@ class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.property_frame = ctk.CTkFrame(self, fg_color="transparent")
+
         self.thumbnail_property = ctk.CTkLabel(
-            self, text="", width=128, height=128, fg_color="black"
+            self.property_frame,
+            text="",
+            width=128,
+            height=128,
+            fg_color="black",
         )
         self.text_properties = [
-            ctk.CTkLabel(self, text="File Name:", width=360),
-            ctk.CTkLabel(self, text="File Size:"),
-            ctk.CTkLabel(self, text="File Type:"),
-            ctk.CTkLabel(self, text="Aspect Ratio:"),
-            ctk.CTkLabel(self, text="Audio Channels:"),
-            ctk.CTkLabel(self, text="Sample Rate:"),
-            ctk.CTkLabel(self, text="Duration:"),
-            ctk.CTkLabel(self, text="Frames:"),
-            ctk.CTkLabel(self, text="Framerate:"),
-            ctk.CTkLabel(self, text="Alpha:"),
-            ctk.CTkLabel(self, text="Height:"),
-            ctk.CTkLabel(self, text="Width:"),
-            ctk.CTkLabel(self, text="Map Indexes:"),
+            ctk.CTkLabel(self.property_frame, text="File Name:", width=340),
+            ctk.CTkLabel(self.property_frame, text="File Size:"),
+            ctk.CTkLabel(self.property_frame, text="File Type:"),
+            ctk.CTkLabel(self.property_frame, text="Aspect Ratio:"),
+            ctk.CTkLabel(self.property_frame, text="Audio Channels:"),
+            ctk.CTkLabel(self.property_frame, text="Sample Rate:"),
+            ctk.CTkLabel(self.property_frame, text="Duration:"),
+            ctk.CTkLabel(self.property_frame, text="Frames:"),
+            ctk.CTkLabel(self.property_frame, text="Framerate:"),
+            ctk.CTkLabel(self.property_frame, text="Alpha:"),
+            ctk.CTkLabel(self.property_frame, text="Height:"),
+            ctk.CTkLabel(self.property_frame, text="Width:"),
+            ctk.CTkLabel(self.property_frame, text="Map Indexes:"),
         ]
 
+        self.property_frame.pack(pady=20)
         self.thumbnail_property.pack()
         self.pack_labels()
 
@@ -302,21 +335,6 @@ class Details(ctk.CTkFrame):
             if len(text) > 40:
                 text = text[0:39] + "..."
             label.configure(text=new_text + ": " + text, require_redraw=True)
-
-        # self.fileName = ctk.CTkLabel(self, text='File Name:')
-        # self.fileSize = ctk.CTkLabel(self, text='File Size:')
-        # self.fileType = ctk.CTkLabel(self, text='File Type:')
-        # self.aspectRatio = ctk.CTkLabel(self, text='Aspect Ratio:')
-        # self.audioChannels = ctk.CTkLabel(self, text='Audio Channels:')
-        # self.audioSampleRate = ctk.CTkLabel(self, text='Sample Rate:')
-        # self.duration = ctk.CTkLabel(self, text='Duration:')
-        # self.durationFrames = ctk.CTkLabel(self, text='Frames:')
-        # self.fps = ctk.CTkLabel(self, text='Framerate:')
-        # self.hasAlpha = ctk.CTkLabel(self, text='Alpha:')
-        # self.height = ctk.CTkLabel(self, text='Height:')
-        # self.iD = ctk.CTkLabel(self, text='ID:')
-        # self.mapIndexes = ctk.CTkLabel(self, text='Map Indexes:')
-        # self.width = ctk.CTkLabel(self, text='Width:')
 
 
 class ImportSheet(ctk.CTkFrame):
@@ -343,9 +361,35 @@ class ImportSheet(ctk.CTkFrame):
             displayed_columns=[0],
             all_columns_displayed=False,
             auto_resize_row_index=True,
+            table_bg="#2c2c2d",  # bg colours
+            header_bg="#2c2c2d",
+            index_bg="#2c2c2d",
+            header_selected_cells_bg="#2c2c2d",
+            index_selected_cells_bg="#2c2c2d",
+            vertical_scroll_background="#2c2c2d",
+            top_left_bg="#2c2c2d",
+            header_fg="white",  # fg colours
+            table_fg="white",
+            index_fg="white",
+            header_grid_fg="black",
+            table_grid_fg="black",
+            index_grid_fg="black",
+            header_selected_cells_fg="white",
+            index_selected_cells_fg="white",
+            table_selected_cells_fg="white",
+            outline_thickness=1,  # highlight colours
+            outline_color="#2c2c2d",
+            scrollbar_show_arrows=False,  # Scrollbar options
+            scrollbar_theme_inheritance="default",
+            vertical_scroll_active_bg="#767679",
+            vertical_scroll_not_active_bg="#767679",
+            vertical_scroll_pressed_bg="#767679",
+            vertical_scroll_troughcolor="#2c2c2d",
         )
 
-        self.sheet.enable_bindings()
+        self.sheet.enable_bindings(
+            "single_select", "arrowkeys", "right_click_popup_menu"
+        )
         self.sheet.row_index([x for x in range(256)])
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
@@ -386,12 +430,13 @@ class MediaSheet(ctk.CTkFrame):
         self.sheet = Sheet(
             self,
             name="Bank_Data",
-            show_top_left=True,
+            show_top_left=False,
             headers=HEADERS,  # type: ignore
             show_x_scrollbar=False,
             total_columns=1,
             align="c",
             show_row_index=False,
+            index=None,
             show_vertical_grid=False,
             empty_horizontal=0,
             empty_vertical=0,
@@ -400,6 +445,30 @@ class MediaSheet(ctk.CTkFrame):
             all_columns_displayed=False,
             auto_resize_row_index=True,
             height=150,
+            table_bg="#2c2c2d",  # bg colours
+            header_bg="#2c2c2d",
+            index_bg="#2c2c2d",
+            header_selected_cells_bg="#2c2c2d",
+            index_selected_cells_bg="#2c2c2d",
+            vertical_scroll_background="#2c2c2d",
+            top_left_bg="#2c2c2d",
+            header_fg="white",  # fg colours
+            table_fg="white",
+            index_fg="white",
+            header_grid_fg="black",
+            table_grid_fg="black",
+            index_grid_fg="black",
+            header_selected_cells_fg="white",
+            index_selected_cells_fg="white",
+            table_selected_cells_fg="white",
+            outline_thickness=1,  # highlight colours
+            outline_color="#474747",
+            scrollbar_show_arrows=False,  # Scrollbar options
+            scrollbar_theme_inheritance="default",
+            vertical_scroll_active_bg="#767679",
+            vertical_scroll_not_active_bg="#767679",
+            vertical_scroll_pressed_bg="#767679",
+            vertical_scroll_troughcolor="#2c2c2d",
         )
 
         self.sheet.enable_bindings()
