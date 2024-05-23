@@ -85,18 +85,52 @@ class Presenter:
     def import_csv(self, file_name: str) -> None:
         try:
             data = parse_csv(file_name)
+
             if len(data) == 0:
                 raise ValueError("No Entries Found")
             name_data = []
+            bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
+
+            # if int(bank_idx) == 0:  # Bank 0 has an unused slot in the first index
+            #     name_data.append(["None"])
+
             for entry in data:
                 name_data.append([entry[0]])
+
             self.populate_import_sheet(name_data)
+
         except IndexError as e:
             self.show_status("Failed to load file")
         except ValueError as e:
             self.show_status(str(e))
         except TypeError as e:
             self.show_status(str(e))
+
+    # def update_csv(self) -> None:
+    #     data = self.view.main_frame.import_frame.sheet.get_column_data(0)
+    #     bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
+
+    #     if bank_idx.isnumeric:
+    #         bank_idx = int(bank_idx)
+    #     else:
+    #         raise TypeError(
+    #             "Bank is not a number"
+    #         )  # This should never happen, if it does something is majorly broken
+
+    #     if bank_idx > 0 and data[0] == "None":
+    #         data = data[1:]
+
+    #     if bank_idx == 0 and data[0] != "None":
+    #         new_data = ["None"]
+    #         data = map(lambda x: new_data.append(str(x)), data)
+
+    #     self.populate_import_sheet([list(map(lambda x: str(x), data))])
+
+    # def get_bank_idx(self) -> int | None:
+    #     bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
+    #     if bank_idx.isnumeric:
+    #         return int(bank_idx)
+    #     raise TypeError("Bank value is not an integer")
 
     def populate_import_sheet(self, data: list[list[str]]) -> None:
         try:
@@ -149,29 +183,58 @@ class Presenter:
         media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
         print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
 
+        while len(media_titles) < 256:
+            media_titles.append("None")
+
         map_idx = int(int(bank_idx) * 256)
+
+        if int(bank_idx) == 0:  # clip offset for bank 0
+            map_idx += 1
 
         success = 0
         fail = 0
+        removed = 0
 
         for title in media_titles:
+            if title == "None" or title == "":
+
+                if self.model.push_media_index(str(title), map_idx):
+                    removed += 1
+
             if self.model.push_media_index(str(title), map_idx):
                 success += 1
+
             else:
                 fail += 1
+
             map_idx += 1
 
         self.show_status("Transfer Complete")
-        print(f"File Transfer Complete: Success = {success}, Failure = {fail}")
+        print(
+            f"File Transfer Complete: Success = {success}, Failure = {fail}, Removed = {removed}"
+        )
 
     def verify_match(self) -> None:
         # Update bank sheet after changes
+        bank_idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
         bank = self.view.main_frame.bank_frame.sheet.get_column_data(0)
         csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
 
-        while bank[0 : len(csv)] != csv:
+        if bank_idx > 0:
+            bank_start_idx = 0
+            bank_end_idx_offset = 0
+        else:
+            bank_start_idx = 1
+            bank_end_idx_offset = 1
+
+        bank_slice = bank[bank_start_idx : len(csv) + bank_end_idx_offset]
+
+        while bank_slice != csv:
             self.pull_media()
             self.view.update_idletasks()
-            bank = self.view.main_frame.bank_frame.sheet.get_column_data(0)
+            bank_slice = self.view.main_frame.bank_frame.sheet.get_column_data(0)[
+                bank_start_idx : len(csv) + bank_end_idx_offset
+            ]
             csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
-            sleep(0.05)
+            print(f"bank data: {bank_slice}\ncsv data: {csv}")
+            sleep(0.4)
