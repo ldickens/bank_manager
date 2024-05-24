@@ -106,32 +106,6 @@ class Presenter:
         except TypeError as e:
             self.show_status(str(e))
 
-    # def update_csv(self) -> None:
-    #     data = self.view.main_frame.import_frame.sheet.get_column_data(0)
-    #     bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
-
-    #     if bank_idx.isnumeric:
-    #         bank_idx = int(bank_idx)
-    #     else:
-    #         raise TypeError(
-    #             "Bank is not a number"
-    #         )  # This should never happen, if it does something is majorly broken
-
-    #     if bank_idx > 0 and data[0] == "None":
-    #         data = data[1:]
-
-    #     if bank_idx == 0 and data[0] != "None":
-    #         new_data = ["None"]
-    #         data = map(lambda x: new_data.append(str(x)), data)
-
-    #     self.populate_import_sheet([list(map(lambda x: str(x), data))])
-
-    # def get_bank_idx(self) -> int | None:
-    #     bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
-    #     if bank_idx.isnumeric:
-    #         return int(bank_idx)
-    #     raise TypeError("Bank value is not an integer")
-
     def populate_import_sheet(self, data: list[list[str]]) -> None:
         try:
             self.view.main_frame.import_frame.update_sheet(data)
