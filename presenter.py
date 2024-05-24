@@ -25,15 +25,14 @@ class Presenter:
         return self.model.init_database()
 
     def pull_media(self) -> None:
-        print("Pulling Media")
 
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
-        if not self.model.media_loaded:
-            if not self.model.init_database():
-                self.show_status("Failed to load media")
-                return
+        print("Pulling Media")
+        if not self.model.init_database():
+            self.show_status("Failed to load media")
+            return
 
         print("Updating Media sheet")
         self.update_media_sheet()
@@ -91,10 +90,6 @@ class Presenter:
             if len(data) == 0:
                 raise ValueError("No Entries Found")
             name_data = []
-            bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
-
-            # if int(bank_idx) == 0:  # Bank 0 has an unused slot in the first index
-            #     name_data.append(["None"])
 
             for entry in data:
                 name_data.append([entry[0]])
@@ -213,5 +208,5 @@ class Presenter:
                 bank_start_idx : len(csv) + bank_end_idx_offset
             ]
             csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
-            print(f"bank data: {bank_slice}\ncsv data: {csv}")
+            print(f"bank data: {len(bank_slice)} Items\ncsv data: {len(csv)} Items")
         print("Sheets Synchronised")

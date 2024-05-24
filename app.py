@@ -14,7 +14,7 @@ from _types import Presenter
 
 class App(ctk.CTk):
     def __init__(self, presenter: Presenter) -> None:
-        super().__init__()  # type: ignore
+        super().__init__()
 
         self.geometry("1440x780")
         self.title("Bank Manager")
@@ -170,6 +170,7 @@ class OptionsFrame(ctk.CTkFrame):
 
     def push_media_callback(self) -> None:
         self._presenter.update_bank()
+        self._presenter.pull_media()
         self._presenter.verify_match()
         self._presenter.get_thumb()
 
@@ -203,7 +204,6 @@ class OptionsFrame(ctk.CTkFrame):
 
     def validate_bank_select_entry_focusin(self, event: Event) -> None:
         self.validate_bank_pre_edit = self.bank_select_entry_var.get()
-        print(self.validate_bank_pre_edit)
 
     def validate_bank_select_entry_focusout(self, event: Event) -> None:
         entry = self.bank_select_entry_var.get()

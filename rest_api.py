@@ -85,10 +85,6 @@ class Model:
         self.media: list[Media] = []
         self.banks: dict[int, Bank] = {}
 
-        for x in range(0, 256):
-            bank = Bank(x)
-            self.banks.update({x: bank})
-
         self._BASE_URL: str = "http://127.0.0.1:40512"
         self.media_loaded: bool = False
 
@@ -239,6 +235,11 @@ class Model:
         if data["tag"] == "MediaFileType":
             return data
 
+    def create_banks(self) -> None:
+        for x in range(0, 256):
+            bank = Bank(x)
+            self.banks.update({x: bank})
+
     def create_media(self, data: MediaTypeTag) -> Media:
         props = []
         sorted_data = [(k, v) for k, v in sorted(data.items())]
@@ -293,6 +294,9 @@ class Model:
         return False
 
     def init_banks(self) -> bool:
+        if len(self.banks) == 0:
+            self.create_banks()
+
         for media in self.media:
             for idx in media.mapIndexes:
                 bank, slot = self.calculate_index(idx)
