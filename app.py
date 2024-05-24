@@ -292,49 +292,96 @@ class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.property_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_property_frame = ctk.CTkFrame(
+            self, fg_color="transparent", border_width=2, corner_radius=10
+        )
 
         self.thumbnail_property = ctk.CTkLabel(
-            self.property_frame,
+            self.main_property_frame,
             text="",
             width=128,
             height=128,
             fg_color="black",
         )
-        self.text_properties = [
-            ctk.CTkLabel(self.property_frame, text="File Name:", width=340),
-            ctk.CTkLabel(self.property_frame, text="File Size:"),
-            ctk.CTkLabel(self.property_frame, text="File Type:"),
-            ctk.CTkLabel(self.property_frame, text="Aspect Ratio:"),
-            ctk.CTkLabel(self.property_frame, text="Audio Channels:"),
-            ctk.CTkLabel(self.property_frame, text="Sample Rate:"),
-            ctk.CTkLabel(self.property_frame, text="Duration:"),
-            ctk.CTkLabel(self.property_frame, text="Frames:"),
-            ctk.CTkLabel(self.property_frame, text="Framerate:"),
-            ctk.CTkLabel(self.property_frame, text="Alpha:"),
-            ctk.CTkLabel(self.property_frame, text="Height:"),
-            ctk.CTkLabel(self.property_frame, text="Width:"),
-            ctk.CTkLabel(self.property_frame, text="Map Indexes:"),
+
+        # Internal grid for properties
+        self.details_props_frame = ctk.CTkFrame(self.main_property_frame, width=400)
+        self.details_props_frame.grid_columnconfigure(0)
+        self.details_props_frame.grid_columnconfigure(2)
+        self.details_props_frame.grid_rowconfigure(0)
+
+        self.property_headers_frame = ctk.CTkFrame(self.details_props_frame)
+        self.property_headers_frame.grid_configure(row=0, column=0)
+
+        self.property_details_frame = ctk.CTkFrame(self.details_props_frame)
+        self.property_details_frame.grid_configure(row=0, column=1)
+
+        self.property_headers: list[str] = [
+            "File Name",
+            "File Size",
+            "File Type",
+            "Aspect Ratio",
+            "Audio Channels",
+            "Sample Rate",
+            "Duration",
+            "Frames",
+            "Framerate",
+            "Alpha",
+            "Height",
+            "Width",
+            "Map Indexes",
         ]
 
-        self.property_frame.pack(pady=20)
-        self.thumbnail_property.pack()
-        self.pack_labels()
+        self.property_details_labels: list[ctk.CTkLabel] = []
+        self.property_headers_labels: list[ctk.CTkLabel] = []
 
-    def pack_labels(self) -> None:
-        for label in self.text_properties:
-            label.pack(expand=True, fill="x")
+        self.main_property_frame.pack(pady=20, fill="both", expand=True)
+        self.thumbnail_property.pack(pady=10)
+        self.details_props_frame.pack(pady=10)
+        self.create_prop_headers(self.property_headers)
+        self.create_prop_details()
+        self.pack_prop_headers()
+        self.pack_prop_details()
+
+    def pack_prop_headers(self) -> None:
+        for label in self.property_headers_labels:
+            label.pack(fill="x", ipadx=10)
+
+    def pack_prop_details(self) -> None:
+        for label in self.property_details_labels:
+            label.pack(fill="x", ipadx=10)
+
+    def create_prop_headers(self, headers: list[str]) -> None:
+        for x in range(0, 13):
+            self.property_headers_labels.append(
+                ctk.CTkLabel(
+                    self.property_headers_frame,
+                    text=f"{headers[x]}:",
+                    justify="right",
+                    anchor="e",
+                    width=100,
+                )
+            )
+
+    def create_prop_details(self) -> None:
+        for _ in range(1, 14):
+            self.property_details_labels.append(
+                ctk.CTkLabel(
+                    self.property_details_frame,
+                    text="",
+                    width=250,
+                )
+            )
 
     def set_thumbnail(self, img: Image.Image) -> None:
         thumbnail = ctk.CTkImage(light_image=img, size=(128, 128))
         self.thumbnail_property.configure(image=thumbnail, require_redraw=True)
 
     def set_properties(self, properties: list[str]) -> None:
-        for label, text in zip(self.text_properties, properties):
-            new_text = label.cget("text").split(":")[0]
-            if len(text) > 40:
-                text = text[0:39] + "..."
-            label.configure(text=new_text + ": " + text, require_redraw=True)
+        for label, text in zip(self.property_details_labels, properties):
+            if len(text) > 35:
+                text = text[0:35] + "..."
+            label.configure(text=text, require_redraw=True)
 
 
 class ImportSheet(ctk.CTkFrame):
