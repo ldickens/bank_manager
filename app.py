@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.filedialog
-from os import getcwd
+from os import path
 from re import fullmatch
 from tkinter import Event, StringVar
 from typing import Any
@@ -19,7 +19,9 @@ class App(ctk.CTk):
         self.geometry("1440x780")
         self.title("Bank Manager")
         self._presenter = presenter
-        ctk.set_default_color_theme("\\".join([getcwd(), "theme.json"]))
+        ctk.set_default_color_theme(
+            path.abspath(path.join(path.dirname(__file__), "theme.json"))
+        )
 
         self.main_frame = MainWindow(self, presenter)
         self.main_frame.pack(expand=True, fill="both")
