@@ -33,6 +33,7 @@ class Presenter:
         if not self.model.init_database():
             self.show_status("Failed to load media")
             return
+        self.show_status("Pull Complete")
 
         print("Updating Media sheet")
         self.update_media_sheet()

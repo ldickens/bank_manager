@@ -16,7 +16,7 @@ class App(ctk.CTk):
     def __init__(self, presenter: Presenter) -> None:
         super().__init__()
 
-        self.geometry("1440x780")
+        self.geometry("1440x900")
         self.title("Bank Manager")
         self._presenter = presenter
         ctk.set_default_color_theme(
@@ -88,8 +88,15 @@ class MainWindow(ctk.CTkFrame):
         """
         Status Bar
         """
-        self.status = StatusBar(presenter=presenter, master=self.status_frame)
-        self.status.grid_configure(column=0, columnspan=3, row=3, sticky="ew")
+        self.status = StatusBar(
+            presenter=presenter, master=self.status_frame, fg_color="transparent"
+        )
+        self.status.grid_configure(
+            column=0,
+            columnspan=3,
+            row=3,
+            sticky="e",
+        )
 
 
 class OptionsFrame(ctk.CTkFrame):
@@ -531,7 +538,7 @@ class MediaSheet(ctk.CTkFrame):
         )
 
         self.sheet.enable_bindings()
-        self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+        self.sheet.pack(expand=True, fill="both", padx=20, pady=(0, 20))
 
     def update_sheet(self, data) -> None:
         self.sheet.set_sheet_data(
@@ -553,15 +560,10 @@ class StatusBar(ctk.CTkFrame):
 
         self.status_var = StringVar()
         self.status = ctk.CTkLabel(
-            self, textvariable=self.status_var, fg_color="transparent"
+            self,
+            textvariable=self.status_var,
+            fg_color="transparent",
+            justify="right",
+            anchor="e",
         )
-        self.status.pack(side="right", expand=True, fill="x")
-
-    #     # debug buttons
-    #     self.button = ctk.CTkButton(self, command=self.get_thumb)
-    #     self.button.pack()
-
-    # def get_thumb(self):
-    #     self._presenter.get_thumb(
-    #         "648c69e2-3879-4971-b3dd-f4c3dc5bf7d0:777b1d6abf7616f1817fa80fc7f8fa4d"
-    #    )
+        self.status.pack(expand=True, fill="both")
