@@ -108,8 +108,19 @@ class OptionsFrame(ctk.CTkFrame):
         self.import_csv_button.pack(side="left", pady=5, padx=5)
 
         """
+        Push Media 
+        """
+        self.update_bank_button = ctk.CTkButton(
+            self, text="Push", command=self.push_media_callback
+        )
+        self.update_bank_button.pack(side="left", pady=5, padx=5)
+
+        """
         Target IP
         """
+        self.target_ip_label = ctk.CTkLabel(self, text="Target IP:")
+        self.target_ip_label.pack(side="left", padx=(5, 0), pady=5)
+
         self.target_ip_var = StringVar(name="Target IP", value="127.0.0.1")
         self.target_ip_entry = ctk.CTkEntry(
             self,
@@ -124,6 +135,9 @@ class OptionsFrame(ctk.CTkFrame):
         """
         Bank Select
         """
+        self.target_bank_label = ctk.CTkLabel(self, text="Bank:")
+        self.target_bank_label.pack(side="left", padx=(5, 0), pady=5)
+
         self.bank_select_entry_var = StringVar(name="Bank Select", value="0")
         self.bank_select_entry = ctk.CTkEntry(
             self,
@@ -151,14 +165,6 @@ class OptionsFrame(ctk.CTkFrame):
             self, text="Pull", command=self.pull_callback
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
-
-        """
-        Push Media 
-        """
-        self.update_bank_button = ctk.CTkButton(
-            self, text="Push", command=self.push_media_callback
-        )
-        self.update_bank_button.pack(side="left", pady=5, padx=5)
 
     def push_media_callback(self) -> None:
         self._presenter.update_bank()
@@ -224,7 +230,7 @@ class BankSheet(ctk.CTkFrame):
             show_x_scrollbar=False,
             total_columns=1,
             align="c",
-            show_vertical_grid=False,
+            show_vertical_grid=True,
             empty_horizontal=0,
             empty_vertical=0,
             auto_resize_columns=80,
@@ -241,9 +247,9 @@ class BankSheet(ctk.CTkFrame):
             header_fg="white",  # fg colours
             table_fg="white",
             index_fg="white",
-            header_grid_fg="black",
-            table_grid_fg="black",
-            index_grid_fg="black",
+            header_grid_fg="#202020",
+            table_grid_fg="#202020",
+            index_grid_fg="#202020",
             header_selected_cells_fg="white",
             index_selected_cells_fg="white",
             table_selected_cells_fg="white",
@@ -401,7 +407,7 @@ class ImportSheet(ctk.CTkFrame):
             show_x_scrollbar=False,
             total_columns=1,
             align="c",
-            show_vertical_grid=False,
+            show_vertical_grid=True,
             empty_horizontal=0,
             empty_vertical=0,
             auto_resize_columns=80,
@@ -418,9 +424,9 @@ class ImportSheet(ctk.CTkFrame):
             header_fg="white",  # fg colours
             table_fg="white",
             index_fg="white",
-            header_grid_fg="black",
-            table_grid_fg="black",
-            index_grid_fg="black",
+            header_grid_fg="#202020",
+            table_grid_fg="#202020",
+            index_grid_fg="#202020",
             header_selected_cells_fg="white",
             index_selected_cells_fg="white",
             table_selected_cells_fg="white",
@@ -484,7 +490,7 @@ class MediaSheet(ctk.CTkFrame):
             align="c",
             show_row_index=False,
             index=None,
-            show_vertical_grid=False,
+            show_vertical_grid=True,
             empty_horizontal=0,
             empty_vertical=0,
             auto_resize_columns=80,
@@ -502,9 +508,9 @@ class MediaSheet(ctk.CTkFrame):
             header_fg="white",  # fg colours
             table_fg="white",
             index_fg="white",
-            header_grid_fg="black",
-            table_grid_fg="black",
-            index_grid_fg="black",
+            header_grid_fg="#202020",
+            table_grid_fg="#202020",
+            index_grid_fg="#202020",
             header_selected_cells_fg="white",
             index_selected_cells_fg="white",
             table_selected_cells_fg="white",

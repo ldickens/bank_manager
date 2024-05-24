@@ -204,6 +204,7 @@ class Presenter:
         bank_slice = bank[bank_start_idx : len(csv) + bank_end_idx_offset]
 
         while bank_slice != csv:
+            sleep(0.5)
             self.pull_media()
             self.view.update_idletasks()
             bank_slice = self.view.main_frame.bank_frame.sheet.get_column_data(0)[
@@ -211,4 +212,4 @@ class Presenter:
             ]
             csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
             print(f"bank data: {bank_slice}\ncsv data: {csv}")
-            sleep(0.4)
+        print("Sheets Synchronised")
