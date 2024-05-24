@@ -195,18 +195,22 @@ class OptionsFrame(ctk.CTkFrame):
         self._presenter.get_bank(bank)
 
     def validate_bank_select_entry_keypress(self, edit: str) -> bool:
-        if not edit.isdigit():
-            return False
-        return True
+        if edit.isdigit() or edit == "":
+            return True
+        return False
 
     def validate_bank_select_entry_focusin(self, event: Event) -> None:
         self.validate_bank_pre_edit = self.bank_select_entry_var.get()
+        print(self.validate_bank_pre_edit)
 
     def validate_bank_select_entry_focusout(self, event: Event) -> None:
-        entry = int(self.bank_select_entry_var.get())
-        if entry > 256 or entry < 0:
+        entry = self.bank_select_entry_var.get()
+        if entry == "":
+            self.bank_select_entry_var.set(self.validate_bank_pre_edit)
+        elif int(entry) > 256 or int(entry) < 0:
             self.bank_select_entry_var.set(self.validate_bank_pre_edit)
             self._presenter.show_status("Bank number not valid")
+
         bank_idx = int(self.bank_select_entry_var.get())
         self._presenter.get_bank(bank_idx)
         self._presenter.get_thumb()

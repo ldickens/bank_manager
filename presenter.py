@@ -49,6 +49,8 @@ class Presenter:
             self.view.main_frame.import_frame.media_exists(data_list)
 
     def get_bank(self, bank: int | None = None) -> None:
+        if not self.model.media_loaded:
+            return
         if bank == None:
             idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
         else:

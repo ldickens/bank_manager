@@ -288,6 +288,7 @@ class Model:
 
                         if valid_clip != None:
                             self.media.append(self.create_media(valid_clip))
+                    self.media_loaded = True
                     return True
         return False
 
