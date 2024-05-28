@@ -92,6 +92,8 @@ class Model:
         # self.debug_banks()
         # self.debug_media()
 
+        self.create_banks()
+
     @property
     def BASE_URL(self) -> str:
         return self._BASE_URL
