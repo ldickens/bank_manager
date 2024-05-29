@@ -185,8 +185,8 @@ class OptionsFrame(ctk.CTkFrame):
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
 
     def pull_callback(self) -> None:
-        self._presenter.pull_media()
-        self._presenter.get_thumb()
+        if self._presenter.pull_media():
+            self._presenter.get_thumb()
 
     def validate_ip_input_focusin(self, event: Event) -> None:
         self.validate_pre_edit = self.target_ip_var.get()

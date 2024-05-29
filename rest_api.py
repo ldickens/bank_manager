@@ -87,12 +87,11 @@ class Model:
 
         self._BASE_URL: str = "http://127.0.0.1:40512"
         self.media_loaded: bool = False
+        self.loaded_ip: str = ""
 
         # debugging
         # self.debug_banks()
         # self.debug_media()
-
-        self.create_banks()
 
     @property
     def BASE_URL(self) -> str:
@@ -292,11 +291,13 @@ class Model:
                         if valid_clip != None:
                             self.media.append(self.create_media(valid_clip))
                     self.media_loaded = True
+                    self.loaded_ip = self.BASE_URL
+                    print(f"ip: {self.BASE_URL}")
                     return True
         return False
 
     def init_banks(self) -> bool:
-        if len(self.banks) == 0:
+        if len(self.banks) == 0 or self.BASE_URL != self.loaded_ip:
             self.create_banks()
 
         for media in self.media:

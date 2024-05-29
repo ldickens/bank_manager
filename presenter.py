@@ -48,6 +48,8 @@ class Presenter:
                 data_list.append([str(item)])
             self.view.main_frame.import_frame.media_exists(data_list)
 
+        return
+
     def get_bank(self, bank: int | None = None) -> None:
         if not self.model.media_loaded:
             return
