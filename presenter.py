@@ -215,3 +215,11 @@ class Presenter:
             csv = self.view.main_frame.import_frame.sheet.get_column_data(0)
             print(f"bank data: {len(bank_slice)} Items\ncsv data: {len(csv)} Items")
         print("Sheets Synchronised")
+
+    def search_media(self, text: str) -> None:
+        if matches := self.model.search_media(text):
+            self.view.main_frame.media_frame.update_sheet(matches)
+            return
+        self.update_media_sheet()
+        self.view.main_frame.status.status_var.set("No Matches")
+        self.view.update_idletasks()

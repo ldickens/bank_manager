@@ -65,14 +65,6 @@ class MediaFileTypeTag(MediaFileType):
     tag: Literal["MediaFileType"]
 
 
-# class MediaThumb(TypedDict):  # Probably not needed anymore seperated the method away from make_request
-#     image: str
-
-
-# class MediaThumbTag(MediaThumb):
-#     tag: Literal["MediaThumbType"]
-
-
 valid_tag_types = MediaFileTypeTag | MediaMapTypeTag | MediaTypeTag
 
 """
@@ -369,3 +361,13 @@ class Model:
     def debug_media(self) -> None:
         for med in self.media:
             print(f"{med} \n")
+
+    def search_media(self, text: str) -> list[list[str]]:
+        matches = []
+
+        for media in self.media:
+            if text in media.fileName:
+                matches.append([media.fileName])
+        print(matches)
+
+        return matches

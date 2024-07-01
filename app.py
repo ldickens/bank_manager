@@ -36,13 +36,14 @@ class MainWindow(ctk.CTkFrame):
         self.top_frame = ctk.CTkFrame(self)
         self.top_frame.pack(expand=True, fill="both")
 
-        self.status_frame = ctk.CTkFrame(self)
+        self.status_frame = ctk.CTkFrame(self, fg_color="#292929")
         self.status_frame.pack(fill="x")
 
         self.top_frame.grid_rowconfigure(0)
         self.top_frame.grid_rowconfigure(1, weight=1)
-        self.top_frame.grid_rowconfigure(2, weight=1)
-        self.top_frame.grid_rowconfigure(3)
+        self.top_frame.grid_rowconfigure(2)
+        self.top_frame.grid_rowconfigure(3, weight=1)
+        self.top_frame.grid_rowconfigure(4)
         self.top_frame.grid_columnconfigure(0, weight=1)
         self.top_frame.grid_columnconfigure(1)
         self.top_frame.grid_columnconfigure(2, weight=1)
@@ -50,40 +51,45 @@ class MainWindow(ctk.CTkFrame):
         """
         Options
         """
-        self.options_frame = OptionsFrame(
-            self._presenter, master=self.top_frame, fg_color="transparent"
+        self.options_outer_frame = ctk.CTkFrame(self.top_frame, fg_color="#292929")
+        self.options_outer_frame.grid_configure(
+            column=0, columnspan=3, row=0, sticky="nsew"
         )
-        self.options_frame.grid_configure(column=0, columnspan=3, row=0, sticky="ns")
+        self.options_frame = OptionsFrame(
+            self._presenter, master=self.options_outer_frame, fg_color="#292929"
+        )
+        self.options_frame.pack()
 
         """
         Import Sheet
         """
         self.import_frame = ImportSheet(presenter=presenter, master=self.top_frame)
-        self.import_frame.grid_configure(
-            column=0, row=1, sticky="nsew", ipadx=20, ipady=20
-        )
+        self.import_frame.grid_configure(column=0, row=1, sticky="nsew", ipadx=20)
 
         """
         Details
         """
         self.details_frame = Details(self.top_frame)
-        self.details_frame.grid_configure(
-            row=1, column=1, sticky="nsew", ipadx=20, ipady=20
-        )
+        self.details_frame.grid_configure(row=1, column=1, sticky="nsew", ipadx=20)
 
         """
         Bank Sheet
         """
         self.bank_frame = BankSheet(self._presenter, master=self.top_frame)
-        self.bank_frame.grid_configure(
-            column=2, row=1, sticky="nsew", ipadx=20, ipady=20
-        )
+        self.bank_frame.grid_configure(column=2, row=1, sticky="nsew", ipadx=20)
 
+        """
+        Search Bar
+        """
+        self.search_frame = SearchBar(self._presenter, master=self.top_frame)
+        self.search_frame.grid_configure(
+            column=0, columnspan=3, row=2, sticky="nsew", pady=(0, 10), padx=(0, 10)
+        )
         """
         Media Sheet
         """
         self.media_frame = MediaSheet(self.top_frame)
-        self.media_frame.grid_configure(column=0, columnspan=3, row=2, sticky="nsew")
+        self.media_frame.grid_configure(column=0, columnspan=3, row=3, sticky="nsew")
 
         """
         Status Bar
@@ -94,7 +100,7 @@ class MainWindow(ctk.CTkFrame):
         self.status.grid_configure(
             column=0,
             columnspan=3,
-            row=3,
+            row=4,
             sticky="e",
         )
 
@@ -593,3 +599,27 @@ class StatusBar(ctk.CTkFrame):
             anchor="e",
         )
         self.status.pack(expand=True, fill="both")
+
+
+class SearchBar(ctk.CTkFrame):
+    def __init__(self, presenter, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._presenter: Presenter = presenter
+
+        self.search_bar = ctk.CTkEntry(
+            self,
+            placeholder_text="Search",
+            width=340,
+        )
+        self.search_bar.pack(side="right", padx=10)
+
+        self.search_bar.bind("<KeyPress>", self.search_callback)
+
+        self.search_bar.bind("<Return>", self.lose_focus_callback)
+
+    def search_callback(self, event: Event) -> None:
+        self._presenter.search_media(self.search_bar.get())
+
+    def lose_focus_callback(self, event: Event) -> None:
+        self.focus()
