@@ -306,6 +306,19 @@ class BankSheet(ctk.CTkFrame):
             delete_options=True,
         )
 
+    def clear_sheet(self) -> None:
+        empty_data = [" " for x in range(0, 256)]
+        self.sheet.set_sheet_data(
+            data=empty_data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
 
 class Details(ctk.CTkFrame):
     def __init__(self, *args, **kwargs):
@@ -543,6 +556,19 @@ class MediaSheet(ctk.CTkFrame):
     def update_sheet(self, data) -> None:
         self.sheet.set_sheet_data(
             data=data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
+    def clear_sheet(self) -> None:
+        empty_data = [" " for x in range(0, 256)]
+        self.sheet.set_sheet_data(
+            data=empty_data,
             reset_col_positions=True,
             reset_row_positions=True,
             redraw=True,

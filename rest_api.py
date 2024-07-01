@@ -136,7 +136,7 @@ class Model:
         """
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.get(full_URL)
+            response = requests.get(full_URL, timeout=0.5)
 
             if (
                 response.status_code == 200
@@ -154,11 +154,14 @@ class Model:
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
 
+        except requests.Timeout as e:
+            print(f"Error: {e}: Timeout Occurred")
+
     def thumbnail_request(self, endpoint: str) -> Image.Image | None:
 
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.get(full_URL)
+            response = requests.get(full_URL, timeout=0.5)
 
             if (
                 response.status_code == 200
@@ -174,6 +177,9 @@ class Model:
         except requests.ConnectionError as e:
             print(f"Error: {e}: Could not connect to the target host")
 
+        except requests.Timeout as e:
+            print(f"Error: {e}: Timeout Occurred")
+
         except OSError as e:
             print(f"Failed to load image: {e}")
 
@@ -181,7 +187,7 @@ class Model:
 
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.put(full_URL)
+            response = requests.put(full_URL, timeout=0.5)
 
             if response.status_code == 200:
                 return True
@@ -199,11 +205,14 @@ class Model:
 
         except ValueError as e:
             print(f"Error: {e}")
+
+        except requests.Timeout as e:
+            print(f"Error: {e}: Timeout Occurred")
 
     def delete_media_entry_request(self, endpoint: str) -> bool | None:
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.delete(full_URL)
+            response = requests.delete(full_URL, timeout=0.5)
 
             if response.status_code == 200:
                 return True
@@ -221,6 +230,9 @@ class Model:
 
         except ValueError as e:
             print(f"Error: {e}")
+
+        except requests.Timeout as e:
+            print(f"Error: {e}: Timeout Occurred")
 
     def validate_media_type(self, data: valid_tag_types) -> MediaTypeTag | None:
         if data["tag"] == "MediaType":
