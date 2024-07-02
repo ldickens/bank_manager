@@ -417,8 +417,8 @@ class Details(ctk.CTkFrame):
 
     def set_properties(self, properties: list[str]) -> None:
         for label, text in zip(self.property_details_labels, properties):
-            if len(text) > 35:
-                text = text[0:35] + "..."
+            if len(text) > 30:
+                text = text[0:31] + "..."
             label.configure(text=text, require_redraw=True)
 
 
