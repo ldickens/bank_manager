@@ -24,7 +24,7 @@ class Presenter:
     def init_database(self) -> bool:
         return self.model.init_database()
 
-    def pull_media(self) -> None:
+    def pull_media(self) -> bool:
 
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
@@ -34,7 +34,7 @@ class Presenter:
             self.show_status("Connection Error: Failed to load media")
             self.view.main_frame.bank_frame.clear_sheet()
             self.view.main_frame.media_frame.clear_sheet()
-            return
+            return False
         self.show_status("Pull Complete")
 
         print("Updating Media sheet")
@@ -50,7 +50,7 @@ class Presenter:
                 data_list.append([str(item)])
             self.view.main_frame.import_frame.media_exists(data_list)
 
-        return
+        return True
 
     def get_bank(self, bank: int | None = None) -> None:
         if not self.model.media_loaded:
