@@ -9,3 +9,7 @@ class PopupWindow(ctk.CTkToplevel):
         self.text = text_message
         self.label = ctk.CTkLabel(self, text=self.text)
         self.label.pack()
+
+    def close_window(self) -> None:
+        self.grab_release()
+        self.destroy()
