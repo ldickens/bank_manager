@@ -90,11 +90,11 @@ class MainWindow(ctk.CTkFrame):
         self.bank_frame.grid_configure(column=2, row=1, sticky="nsew", ipadx=20)
 
         """
-        Search Bar
+        MediaTools Bar
         """
-        self.search_frame = SearchBar(self._presenter, master=self.top_frame)
+        self.search_frame = MediaTools(self._presenter, master=self.top_frame)
         self.search_frame.grid_configure(
-            column=0, columnspan=3, row=2, sticky="nsew", pady=(0, 10), padx=(0, 10)
+            column=0, columnspan=3, row=2, sticky="nsew", pady=(0, 10), padx=(20, 10)
         )
         """
         Media Sheet
@@ -612,11 +612,21 @@ class StatusBar(ctk.CTkFrame):
         self.status.pack(expand=True, fill="both")
 
 
-class SearchBar(ctk.CTkFrame):
+class MediaTools(ctk.CTkFrame):
     def __init__(self, presenter, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._presenter: Presenter = presenter
+
+        self.upload_file = ctk.CTkButton(
+            self, text="Upload File...", command=self.upload_file_callback
+        )
+        self.upload_file.pack(side="left", padx=(0, 5))
+
+        self.upload_folder = ctk.CTkButton(
+            self, text="Upload Folder...", command=self.upload_folder_callback
+        )
+        self.upload_folder.pack(side="left", padx=5)
 
         self.search_bar = ctk.CTkEntry(
             self,
@@ -628,6 +638,12 @@ class SearchBar(ctk.CTkFrame):
         self.search_bar.bind("<KeyPress>", self.search_callback)
 
         self.search_bar.bind("<Return>", self.lose_focus_callback)
+
+    def upload_file_callback(self) -> None:
+        pass
+
+    def upload_folder_callback(self) -> None:
+        pass
 
     def search_callback(self, event: Event) -> None:
         self._presenter.search_media(self.search_bar.get())

@@ -7,9 +7,9 @@ from PIL import Image
 
 from app import App
 from bank import MEDIA_TYPE
-from csv_import import parse_csv
 from endpoint_enums import Endpoints
 from rest_api import Model
+from utiilities import parse_csv
 
 
 class Presenter:
