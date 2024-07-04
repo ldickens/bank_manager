@@ -9,7 +9,7 @@ from app import App
 from bank import MEDIA_TYPE
 from endpoint_enums import Endpoints
 from rest_api import Model
-from utiilities import parse_csv
+from utiilities import parse_csv, open_files
 
 
 class Presenter:
@@ -223,3 +223,11 @@ class Presenter:
         self.update_media_sheet()
         self.view.main_frame.status.status_var.set("No Matches")
         self.view.update_idletasks()
+
+    def upload_files(multiple: bool, title: str = "") -> None:
+        if multiple:
+            dirs = open_files(multiple=True, title="Select a folder...")
+        else:
+            dirs = open_files(multiple=False, title="Select a file...")
+
+        self.model.

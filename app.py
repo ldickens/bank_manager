@@ -640,10 +640,10 @@ class MediaTools(ctk.CTkFrame):
         self.search_bar.bind("<Return>", self.lose_focus_callback)
 
     def upload_file_callback(self) -> None:
-        pass
+        self._presenter.upload_files(multiple=False)
 
     def upload_folder_callback(self) -> None:
-        pass
+        self._presenter.upload_files(multiple=True)
 
     def search_callback(self, event: Event) -> None:
         self._presenter.search_media(self.search_bar.get())
