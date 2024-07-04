@@ -1,4 +1,5 @@
 from csv import reader
+from io import BufferedReader, BytesIO
 from tkinter import filedialog
 
 
@@ -14,15 +15,26 @@ def parse_csv(file: str) -> list[list[str]]:
     return data
 
 
-SUPPORTED_FILE_TYPES = [("Video Files", ".mp4 .m2v .mov .fxr .avi")]
+SUPPORTED_FILE_TYPES = [
+    ("Media Files", ".mp4 .m2v .mov .fxr .avi .tiff .png .jpg .tga"),
+    ("Video Files", ".mp4 .m2v .mov .fxr .avi"),
+    ("Image Files", ".tiff .png .jpg .tga"),
+]
 
 
-def open_files(multiple: bool, title: str) -> list[str]:
+def file_dirs(multiple: bool, title: str) -> tuple[str, ...]:
     if multiple:
-        dirs = filedialog.askdirectory()
+        dirs = tuple(filedialog.askdirectory(title=title))
     else:
         dirs = filedialog.askopenfilenames(
             title=title,
             filetypes=SUPPORTED_FILE_TYPES,
         )
-    return list(dirs)
+        if not isinstance(dirs, tuple):
+            dirs = tuple(dirs)
+    return dirs
+
+
+def file_to_binary(dir: str) -> BufferedReader:
+    with open(dir, "rb") as file:
+        return file

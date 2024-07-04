@@ -1,8 +1,10 @@
-from io import BytesIO
+import os
+from io import BufferedReader, BytesIO
 from typing import Literal, TypedDict
 
 import requests
 from PIL import Image
+from requests_toolbelt import MultipartEncoder
 
 from bank import Bank, Media
 from endpoint_enums import Endpoints
@@ -119,10 +121,14 @@ class Model:
                 endpoint_url = endpoint.value + f"{map_idx}"
                 return (endpoint_url, "")
 
+            case Endpoints.POST_MEDIA:
+                endpoint_url = endpoint.value
+                return (endpoint_url, "")
+
             case _:
                 raise NotImplementedError("Endpoint not implemented")
 
-    def make_request(self, endpoint: str, tag: str) -> valid_tag_types | None:
+    def make_get_request(self, endpoint: str, tag: str) -> valid_tag_types | None:
         """
         Includes the REST code and replies with a generic valid type or None.
         """
@@ -201,6 +207,55 @@ class Model:
         except requests.Timeout as e:
             print(f"Error: {e}: Timeout Occurred")
 
+    def post_media_request(
+        self,
+        endpoint: str,
+        file: str,
+        to_map: bool = False,
+        mapIndex: int = -1,
+        path: str = "",
+    ) -> bool:
+        try:
+            full_URL = self.BASE_URL + endpoint
+            with open(file, "rb") as bin_file:
+                response = requests.post(
+                    full_URL,
+                    data={
+                        "addToMap": str(to_map),
+                        "mapIndex": str(mapIndex),
+                        "customFolderPath": path,
+                    },
+                    files={"MediaFile": (os.path.basename(file), bin_file)},
+                )
+
+                if response.status_code == 200:
+                    return True
+
+                if response.status_code == 400:
+                    raise ValueError(response.reason)
+
+                if response.status_code == 404:
+                    raise ValueError(response.reason)
+
+                raise requests.ConnectionError(
+                    response.status_code, "\n", response.reason
+                )
+
+        except requests.ConnectionError as e:
+            print(f"Error: {e}: Could not connect to the target host")
+
+        except ValueError as e:
+            print(f"Error: {e}")
+
+        except requests.Timeout as e:
+            print(f"Error: {e}: Timeout Occurred")
+
+        return False
+
+    def upload_file(self, file: str) -> None:
+        if endpoint := self.validate_endpoint(Endpoints.POST_MEDIA):
+            self.post_media_request(endpoint[0], file)
+
     def delete_media_entry_request(self, endpoint: str) -> bool | None:
         try:
             full_URL = self.BASE_URL + endpoint
@@ -271,7 +326,7 @@ class Model:
     ) -> bool:  # Should inverse the if statements for less indentation
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
         if endpoint != None:
-            media_data = self.make_request(*endpoint)
+            media_data = self.make_get_request(*endpoint)
 
             if media_data != None:
                 valid_media = self.validate_media_file_type(media_data)
@@ -284,7 +339,7 @@ class Model:
                         )
 
                         if endpoint != None:
-                            clip_data = self.make_request(*endpoint)
+                            clip_data = self.make_get_request(*endpoint)
 
                         if clip_data != None:
                             valid_clip = self.validate_media_type(clip_data)

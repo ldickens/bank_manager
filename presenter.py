@@ -9,7 +9,7 @@ from app import App
 from bank import MEDIA_TYPE
 from endpoint_enums import Endpoints
 from rest_api import Model
-from utiilities import parse_csv, open_files
+from utilities import file_dirs, file_to_binary, parse_csv
 
 
 class Presenter:
@@ -153,6 +153,7 @@ class Presenter:
         ]
         self.view.main_frame.details_frame.set_thumbnail(thumbnail)
         self.view.main_frame.details_frame.set_properties(formatted_properties)
+        self.view.update_idletasks()
 
     def update_bank(self) -> None:
         bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
@@ -224,10 +225,14 @@ class Presenter:
         self.view.main_frame.status.status_var.set("No Matches")
         self.view.update_idletasks()
 
-    def upload_files(multiple: bool, title: str = "") -> None:
+    def upload_files(self, multiple: bool, title: str = "") -> None:
         if multiple:
-            dirs = open_files(multiple=True, title="Select a folder...")
+            dirs = file_dirs(multiple=True, title="Select a folder...")
         else:
-            dirs = open_files(multiple=False, title="Select a file...")
+            dirs = file_dirs(multiple=False, title="Select a file...")
 
-        self.model.
+        if not len(dirs):
+            return
+
+        for dir in dirs:
+            self.model.upload_file(dir)
