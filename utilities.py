@@ -1,3 +1,5 @@
+import os
+import pathlib
 from csv import reader
 from io import BufferedReader, BytesIO
 from tkinter import filedialog
@@ -22,19 +24,25 @@ SUPPORTED_FILE_TYPES = [
 ]
 
 
-def file_dirs(multiple: bool, title: str) -> tuple[str, ...]:
+def file_dirs(multiple: bool, title: str) -> list[str]:
     if multiple:
-        dirs = tuple(filedialog.askdirectory(title=title))
+        dirs = []
+        folder = filedialog.askdirectory(title=title)
+        for filename in os.listdir(folder):
+            print(filename)
+            if (
+                suffix := pathlib.Path(filename).suffix
+                in SUPPORTED_FILE_TYPES[0][1].split()
+            ):
+                dirs.append(os.path.join(folder, filename))
+        print(dirs)
     else:
         dirs = filedialog.askopenfilenames(
             title=title,
             filetypes=SUPPORTED_FILE_TYPES,
         )
-        if not isinstance(dirs, tuple):
-            dirs = tuple(dirs)
+        if isinstance(dirs, tuple):
+            dirs = list(*dirs)
+        else:
+            dirs = []
     return dirs
-
-
-def file_to_binary(dir: str) -> BufferedReader:
-    with open(dir, "rb") as file:
-        return file
