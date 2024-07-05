@@ -1,13 +1,15 @@
+import asyncio
 import os
+import threading
 from io import BufferedReader, BytesIO
 from typing import Literal, TypedDict
 
 import requests
 from PIL import Image
-from requests_toolbelt import MultipartEncoder
 
 from bank import Bank, Media
 from endpoint_enums import Endpoints
+from event_listeners import EventListener
 
 """
 TYPE DEFINITIONS: 
@@ -351,9 +353,19 @@ class Model:
                             self.media.append(self.create_media(valid_clip))
                     self.media_loaded = True
                     self.loaded_ip = self.BASE_URL
+                    self.start_event_listeners_thread()
                     print(f"ip: {self.BASE_URL}")
                     return True
         return False
+
+    def start_event_listeners_thread(self) -> None:
+        thread = threading.Thread(target=self.async_create_loop)
+        thread.start()
+
+    def async_create_loop(self) -> None:
+        ip_address = self.BASE_URL.split(":")[-2].strip("/")
+        listener = EventListener(media_callback=True, ip_address=ip_address)
+        asyncio.run(listener.start_listener())
 
     def init_banks(self) -> bool:
         if len(self.banks) == 0 or self.BASE_URL != self.loaded_ip:

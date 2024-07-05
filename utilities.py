@@ -4,6 +4,8 @@ from csv import reader
 from io import BufferedReader, BytesIO
 from tkinter import filedialog
 
+from psutil import net_if_addrs
+
 
 def parse_csv(file: str) -> list[list[str]]:
     data = []
@@ -46,3 +48,14 @@ def file_dirs(multiple: bool, title: str) -> list[str]:
         else:
             dirs = []
     return dirs
+
+
+def get_nic_addrs() -> list[str]:
+    addrs = net_if_addrs()
+    ip_list = []
+    for entry in addrs:
+        for interface in addrs[entry]:
+            print(interface.family)
+            if interface.family == "<AddressFamily.AF_INET: 2>":
+                ip_list.append(interface.address)
+    return ip_list
