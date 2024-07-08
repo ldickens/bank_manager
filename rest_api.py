@@ -359,13 +359,13 @@ class Model:
         return False
 
     def start_event_listeners_thread(self) -> None:
-        thread = threading.Thread(target=self.async_create_loop)
+        thread = threading.Thread(target=self.threaded_create_loop)
         thread.start()
 
-    def async_create_loop(self) -> None:
+    def threaded_create_loop(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")
         listener = EventListener(media_callback=True, ip_address=ip_address)
-        asyncio.run(listener.start_listener())
+        listener.connect()
 
     def init_banks(self) -> bool:
         if len(self.banks) == 0 or self.BASE_URL != self.loaded_ip:
