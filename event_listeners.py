@@ -1,8 +1,9 @@
-import asyncio
-from json import dumps
+from json import dumps, loads
 
 import websockets.sync.client as webclient
 from websockets.exceptions import ConnectionClosed
+
+from app_state import AppState
 
 
 class EventListener:
@@ -31,7 +32,16 @@ class EventListener:
             try:
                 ws.send(self._jsonify_subscription())
                 for message in ws:
-                    print(message)
+                    if message == "OK":
+                        continue
+                    msg_obj = loads(message)
+                    if msg_obj["category"] == "MEDIA":
+                        AppState._update_media = True
+                        print("\nMedia Updated: Reload required")
+
+                    if msg_obj["category"] == "SYSTEM":
+                        AppState._update_system = True
+                        print("\nSystem change detected: Disconnecting from host.")
             except ConnectionClosed:
                 print("Disconnected from the target host")
 

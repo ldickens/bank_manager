@@ -1,7 +1,6 @@
 import os
 import pathlib
 from csv import reader
-from io import BufferedReader, BytesIO
 from tkinter import filedialog
 
 from psutil import net_if_addrs
@@ -26,25 +25,23 @@ SUPPORTED_FILE_TYPES = [
 ]
 
 
-def file_dirs(multiple: bool, title: str) -> list[str]:
-    if multiple:
+def file_dirs(folder: bool, title: str) -> list[str]:
+    if folder:
         dirs = []
-        folder = filedialog.askdirectory(title=title)
-        for filename in os.listdir(folder):
-            print(filename)
-            if (
-                suffix := pathlib.Path(filename).suffix
-                in SUPPORTED_FILE_TYPES[0][1].split()
-            ):
-                dirs.append(os.path.join(folder, filename))
-        print(dirs)
+        dir = filedialog.askdirectory(title=title)
+        if dir:
+            for filename in os.listdir(dir):
+                print(filename)
+                if pathlib.Path(filename).suffix in SUPPORTED_FILE_TYPES[0][1].split():
+                    dirs.append(os.path.join(dir, filename))
+            return dirs
     else:
         dirs = filedialog.askopenfilenames(
             title=title,
             filetypes=SUPPORTED_FILE_TYPES,
         )
         if isinstance(dirs, tuple):
-            dirs = list(*dirs)
+            dirs = list(dirs)
         else:
             dirs = []
     return dirs

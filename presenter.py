@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from time import sleep
-from typing import NewType
 
 from PIL import Image
 
 from app import App
+from app_state import AppState
 from bank import MEDIA_TYPE
-from endpoint_enums import Endpoints
 from rest_api import Model
 from utilities import file_dirs, parse_csv
 
@@ -49,6 +48,8 @@ class Presenter:
             for item in data:
                 data_list.append([str(item)])
             self.view.main_frame.import_frame.media_exists(data_list)
+
+        self.get_medsys_state_change()
 
         return True
 
@@ -227,12 +228,21 @@ class Presenter:
 
     def upload_files(self, folder: bool, title: str = "") -> None:
         if folder:
-            files = file_dirs(multiple=True, title="Select a folder...")
+            files = file_dirs(folder=True, title="Select a folder...")
         else:
-            files = file_dirs(multiple=True, title="Select a files...")
+            files = file_dirs(folder=False, title="Select files...")
 
         if not len(files):
             return
 
         for file in files:
             self.model.upload_file(file)
+
+    def get_medsys_state_change(self) -> None:
+        if AppState._update_system == True:
+            print("Disconnecting from host")  # Disconnect from the host.
+            AppState._update_system = False
+        if AppState._update_media == True:
+            print("Pulling Media")  # Call a new media pull.
+            AppState._update_media = False
+        self.view.after(2000, self.get_medsys_state_change)

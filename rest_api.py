@@ -1,7 +1,6 @@
-import asyncio
 import os
 import threading
-from io import BufferedReader, BytesIO
+from io import BytesIO
 from typing import Literal, TypedDict
 
 import requests
@@ -77,6 +76,9 @@ END OF DEFINITIONS
 
 
 class Model:
+
+    callbacks_exist: bool = False
+
     def __init__(self) -> None:
         self.media: list[Media] = []
         self.banks: dict[int, Bank] = {}
@@ -359,12 +361,16 @@ class Model:
         return False
 
     def start_event_listeners_thread(self) -> None:
-        thread = threading.Thread(target=self.threaded_create_loop)
-        thread.start()
+        if Model.callbacks_exist == False:
+            thread = threading.Thread(target=self.threaded_create_loop)
+            thread.start()
+            Model.callbacks_exist = True
 
     def threaded_create_loop(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")
-        listener = EventListener(media_callback=True, ip_address=ip_address)
+        listener = EventListener(
+            media_callback=True, system_callback=True, ip_address=ip_address
+        )
         listener.connect()
 
     def init_banks(self) -> bool:
