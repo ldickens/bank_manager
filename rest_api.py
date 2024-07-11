@@ -246,7 +246,7 @@ class Model:
                 )
 
         except requests.ConnectionError as e:
-            print(f"Error: {e}: Could not connect to the target host")
+            print(f"Error: Could not connect to the target host")
 
         except ValueError as e:
             print(f"Error: {e}")

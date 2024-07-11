@@ -27,15 +27,19 @@ class App(ctk.CTk):
         self.main_frame = MainWindow(self, presenter)
         self.main_frame.pack(expand=True, fill="both")
 
-        self.top_level_window: ctk.CTkToplevel | None = None
+        self.top_level_window: PopupWindow | None = None
 
-    def open_window(self, text: str) -> None:
+    def open_window(self, text: str, title: str) -> PopupWindow:
         if self.top_level_window is None or not self.top_level_window.winfo_exists():
-            self.top_level_window = PopupWindow(master=self, text_message=text)
+            self.top_level_window = PopupWindow(
+                self, self._presenter, text_message=text, title=title
+            )
             self.top_level_window.grab_set()
 
         else:
             self.top_level_window.focus()
+
+        return self.top_level_window
 
 
 class MainWindow(ctk.CTkFrame):

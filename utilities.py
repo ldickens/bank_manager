@@ -26,25 +26,26 @@ SUPPORTED_FILE_TYPES = [
 
 
 def file_dirs(folder: bool, title: str) -> list[str]:
+    dirs_list = []
     if folder:
-        dirs = []
         dir = filedialog.askdirectory(title=title)
-        if dir:
-            for filename in os.listdir(dir):
-                print(filename)
-                if pathlib.Path(filename).suffix in SUPPORTED_FILE_TYPES[0][1].split():
-                    dirs.append(os.path.join(dir, filename))
-            return dirs
+        if not dir:
+            return []
+
+        for filename in os.listdir(dir):
+            print(filename)
+            if pathlib.Path(filename).suffix in SUPPORTED_FILE_TYPES[0][1].split():
+                dirs_list.append(os.path.join(dir, filename))
     else:
         dirs = filedialog.askopenfilenames(
             title=title,
             filetypes=SUPPORTED_FILE_TYPES,
         )
         if isinstance(dirs, tuple):
-            dirs = list(dirs)
-        else:
-            dirs = []
-    return dirs
+            for dir in dirs:
+                dirs_list.append(dir)
+
+    return dirs_list
 
 
 def get_nic_addrs() -> list[str]:

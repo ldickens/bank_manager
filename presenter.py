@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+from re import A
+from threading import Thread
 from time import sleep
 
+from customtkinter import CTkToplevel
 from PIL import Image
 
 from app import App
 from app_state import AppState
 from bank import MEDIA_TYPE
+from popup_window import PopupWindow
 from rest_api import Model
 from utilities import file_dirs, parse_csv
 
@@ -16,6 +20,7 @@ class Presenter:
         self.model = model
         self.view = App(presenter=self)
         self.current_ip: str = "127.0.0.1"
+        self.confirm_upload: bool | None = None
 
     def run(self) -> None:
         self.view.mainloop()
@@ -226,17 +231,39 @@ class Presenter:
         self.view.main_frame.status.status_var.set("No Matches")
         self.view.update_idletasks()
 
-    def upload_files(self, folder: bool, title: str = "") -> None:
-        if folder:
-            files = file_dirs(folder=True, title="Select a folder...")
-        else:
-            files = file_dirs(folder=False, title="Select files...")
+    def upload_files(self, folder: bool) -> None:
+        filenames = self.get_media_filenames(folder)
 
-        if not len(files):
+        if not len(filenames):  # cancel if no media selected
             return
 
-        for file in files:
-            self.model.upload_file(file)
+        self.view.open_window(
+            f"Do you want to upload {len(filenames)} files?", "Confirmation"
+        )
+
+        self.threaded_media_load_start(filenames)
+
+    def get_media_filenames(self, folder: bool) -> list[str]:
+        if folder:
+            filenames = file_dirs(folder=True, title="Select a folder...")
+        else:
+            filenames = file_dirs(folder=False, title="Select files...")
+
+        return filenames
+
+    def threaded_media_load_start(self, filenames: list[str]):
+        thread = Thread(target=self.media_load, args=([*filenames],), daemon=True)
+        thread.start()
+
+    def media_load(self, filenames: list[str]) -> None:
+        while self.confirm_upload == None:
+            sleep(1)
+
+        if self.confirm_upload:
+            for file in filenames:
+                self.model.upload_file(file)
+
+        self.confirm_upload = None
 
     def get_medsys_state_change(self) -> None:
         if AppState._update_system == True:
