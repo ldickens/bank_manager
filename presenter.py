@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from re import A
 from threading import Thread
 from time import sleep
 
-from customtkinter import CTkToplevel
 from PIL import Image
 
 from app import App
 from app_state import AppState
 from bank import MEDIA_TYPE
-from popup_window import PopupWindow
 from rest_api import Model
 from utilities import file_dirs, parse_csv
 
