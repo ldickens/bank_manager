@@ -266,7 +266,9 @@ class Presenter:
         if AppState._update_system == True:
             print("Disconnecting from host")  # Disconnect from the host.
             AppState._update_system = False
+
         if AppState._update_media == True:
-            print("Pulling Media")  # Call a new media pull.
+            self.pull_media()  # Pull media since change
             AppState._update_media = False
+
         self.view.after(2000, self.get_medsys_state_change)

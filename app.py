@@ -112,12 +112,7 @@ class MainWindow(ctk.CTkFrame):
         self.status = StatusBar(
             presenter=presenter, master=self.status_frame, fg_color="transparent"
         )
-        self.status.grid_configure(
-            column=0,
-            columnspan=3,
-            row=4,
-            sticky="e",
-        )
+        self.status.pack(fill="x", expand=True)
 
 
 class OptionsFrame(ctk.CTkFrame):
@@ -605,15 +600,48 @@ class StatusBar(ctk.CTkFrame):
         super().__init__(*args, **kwargs)
         self._presenter = presenter
 
+        self.status_text_frame = ctk.CTkFrame(self, width=100, fg_color="transparent")
+        self.status_text_frame.pack(side="left", expand=False, fill=None)
         self.status_var = StringVar()
         self.status = ctk.CTkLabel(
-            self,
+            self.status_text_frame,
             textvariable=self.status_var,
+            width=200,
             fg_color="transparent",
             justify="right",
             anchor="e",
         )
-        self.status.pack(expand=True, fill="both")
+        self.status.pack(expand=True, fill="both", side="left", ipadx=10)
+
+        self.working_bar_frame = ctk.CTkFrame(self, width=100, fg_color="transparent")
+        self.working_bar_frame.pack(side="left", expand=False, fill=None)
+        self.working_bar = ctk.CTkProgressBar(
+            self.working_bar_frame,
+            mode="indeterminate",
+            indeterminate_speed=1,
+            width=40,
+        )
+        self.working_bar.pack(side="left", padx=10)
+        self.working_bar.set(0)
+
+        self.progress_bar_frame = ctk.CTkFrame(self, width=110, fg_color="transparent")
+        self.progress_bar_frame.pack(side="right", padx=5, expand=False, fill=None)
+        self.progress_bar = ctk.CTkProgressBar(
+            self.progress_bar_frame, mode="determinate", width=100
+        )
+        self.progress_bar.pack(side="left", padx=5)
+
+    def set_state_working_bar(self, enabled: bool) -> None:
+        if enabled:
+            self.working_bar.start()
+        else:
+            self.working_bar.stop()
+
+    def set_length_progress_bar(self, length: int) -> None:
+        self.progress_bar.configure(determinate_speed=length)
+
+    def progress_step(self, step: int) -> None:
+        self.progress_bar.set(step)
 
 
 class MediaTools(ctk.CTkFrame):
