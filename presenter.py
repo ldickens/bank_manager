@@ -89,7 +89,7 @@ class Presenter:
         self.model._BASE_URL = new_url
 
     def show_status(self, msg: str) -> None:
-        self.view.main_frame.status.status_var.set(msg)
+        self.view.main_frame.status.set_status_text(msg)
 
     def import_csv(self, file_name: str) -> None:
         try:
@@ -225,7 +225,7 @@ class Presenter:
             self.view.main_frame.media_frame.update_sheet(matches)
             return
         self.update_media_sheet()
-        self.view.main_frame.status.status_var.set("No Matches")
+        self.view.main_frame.status.set_status_text("No Matches")
         self.view.update_idletasks()
 
     def upload_files(self, folder: bool) -> None:
@@ -249,14 +249,24 @@ class Presenter:
         return filenames
 
     def threaded_media_load_start(self, filenames: list[str]):
-        thread = Thread(target=self.media_load, args=([*filenames],), daemon=True)
+        thread = Thread(
+            target=self._threaded_media_load, args=([*filenames],), daemon=True
+        )
         thread.start()
 
-    def media_load(self, filenames: list[str]) -> None:
+    def _threaded_media_load(self, filenames: list[str]) -> None:
         while self.confirm_upload == None:
             sleep(1)
 
         if self.confirm_upload:
+            progress_steps = len(filenames)
+            AppState._total_steps = progress_steps
+            self.view.main_frame.status.create_progress_bar(progress_steps)
+            self.view.main_frame.status.set_uploads_text(
+                total=str(progress_steps), completed="0"
+            )
+            self.view.main_frame.status.set_state_working_bar(True)
+            AppState._uploading = True
             for file in filenames:
                 self.model.upload_file(file)
 
@@ -268,7 +278,23 @@ class Presenter:
             AppState._update_system = False
 
         if AppState._update_media == True:
-            self.pull_media()  # Pull media since change
+
             AppState._update_media = False
+            self.pull_media()  # Pull media since change
+
+            if AppState._uploading == False:
+                return
+
+            progress = AppState._progress_steps
+            self.view.main_frame.status.progress_bar_step(progress)
+            self.view.main_frame.status.set_uploads_text(completed=str(progress))
+            self.view.update_idletasks()
+
+            if (
+                AppState._progress_steps != 0
+                and AppState._progress_steps != 0
+                and AppState._progress_steps == AppState._total_steps
+            ):
+                AppState.reset_uploading()
 
         self.view.after(2000, self.get_medsys_state_change)

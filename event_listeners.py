@@ -38,6 +38,8 @@ class EventListener:
                     if msg_obj["category"] == "MEDIA":
                         AppState._update_media = True
                         print("\nMedia Updated: Reload required")
+                        if AppState._uploading:
+                            AppState._progress_steps += 1
 
                     if msg_obj["category"] == "SYSTEM":
                         AppState._update_system = True

@@ -362,11 +362,11 @@ class Model:
 
     def start_event_listeners_thread(self) -> None:
         if Model.callbacks_exist == False:
-            thread = threading.Thread(target=self.threaded_create_loop)
+            thread = threading.Thread(target=self._threaded_event_listeners)
             thread.start()
             Model.callbacks_exist = True
 
-    def threaded_create_loop(self) -> None:
+    def _threaded_event_listeners(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")
         listener = EventListener(
             media_callback=True, system_callback=True, ip_address=ip_address
