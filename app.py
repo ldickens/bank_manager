@@ -629,7 +629,6 @@ class StatusBar(ctk.CTkFrame):
         self.progress_bar = ctk.CTkProgressBar(
             self.progress_bar_frame, mode="determinate", width=100
         )
-        self.progress_bar.pack(side="left", padx=5)
 
     def set_state_working_bar(self, enabled: bool) -> None:
         if enabled:
@@ -637,11 +636,17 @@ class StatusBar(ctk.CTkFrame):
         else:
             self.working_bar.stop()
 
-    def set_length_progress_bar(self, length: int) -> None:
+    def create_progress_bar(self, length: int) -> None:
         self.progress_bar.configure(determinate_speed=length)
+        self.progress_bar.pack(side="left", padx=5)
 
-    def progress_step(self, step: int) -> None:
+    def progress_bar_step(self, step: int) -> None:
         self.progress_bar.set(step)
+        if self.progress_bar.cget("determinate_speed") == step:
+            self.after(500, self.remove_progress_bar)
+
+    def remove_progress_bar(self) -> None:
+        self.progress_bar.pack_forget()
 
 
 class MediaTools(ctk.CTkFrame):
