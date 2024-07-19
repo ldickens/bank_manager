@@ -16,12 +16,12 @@ class PopupWindow(ctk.CTkToplevel):
         **kwargs
     ):
         super().__init__(master, *args, **kwargs)
-        self.geometry("400x300")
+        self.geometry("400x150")
         self.title = title
 
         self._presenter = presenter
         self.text = text_message
-        self.label = ctk.CTkLabel(self, text=self.text)
+        self.label = ctk.CTkLabel(self, text=self.text, pady=30)
         self.label.pack()
 
         self.confirmation_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -38,8 +38,8 @@ class PopupWindow(ctk.CTkToplevel):
             command=lambda: self.button_callback(False),
         )
 
-        self.yes_button.pack(side="left")
-        self.no_button.pack(side="left")
+        self.yes_button.pack(side="left", padx=10)
+        self.no_button.pack(side="left", padx=10)
 
     def button_callback(self, confirm: bool) -> None:
         self._presenter.confirm_upload = confirm
