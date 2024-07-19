@@ -441,6 +441,5 @@ class Model:
         for media in self.media:
             if text in media.fileName:
                 matches.append([media.fileName])
-        print(matches)
 
         return matches

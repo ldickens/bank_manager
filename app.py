@@ -709,14 +709,17 @@ class MediaTools(ctk.CTkFrame):
         )
         self.upload_folder.pack(side="left", padx=5)
 
+        self.search_bar_string_var = StringVar()
+
         self.search_bar = ctk.CTkEntry(
             self,
             placeholder_text="Search",
             width=340,
+            textvariable=self.search_bar_string_var,
         )
         self.search_bar.pack(side="right", padx=10)
 
-        self.search_bar.bind("<KeyPress>", self.search_callback)
+        self.search_bar.bind("<KeyRelease>", self.search_callback)
 
         self.search_bar.bind("<Return>", self.lose_focus_callback)
 

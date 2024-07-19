@@ -221,12 +221,17 @@ class Presenter:
         print("Sheets Synchronised")
 
     def search_media(self, text: str) -> None:
+        if not text:
+            self.update_media_sheet()
+
         if matches := self.model.search_media(text):
             self.view.main_frame.media_frame.update_sheet(matches)
             return
-        self.update_media_sheet()
-        self.view.main_frame.status.set_status_text("No Matches")
-        self.view.update_idletasks()
+        else:
+            matches = [[]]
+            self.view.main_frame.status.set_status_text("No Matches")
+            self.view.main_frame.media_frame.update_sheet(matches)
+            self.view.update_idletasks()
 
     def upload_files(self, folder: bool) -> None:
         filenames = self.get_media_filenames(folder)
