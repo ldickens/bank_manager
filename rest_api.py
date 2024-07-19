@@ -362,7 +362,9 @@ class Model:
 
     def start_event_listeners_thread(self) -> None:
         if Model.callbacks_exist == False:
-            thread = threading.Thread(target=self._threaded_event_listeners)
+            thread = threading.Thread(
+                target=self._threaded_event_listeners, daemon=True
+            )
             thread.start()
             Model.callbacks_exist = True
 
