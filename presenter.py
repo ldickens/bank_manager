@@ -35,6 +35,7 @@ class Presenter:
             self.show_status("Connection Error: Failed to load media")
             self.view.main_frame.bank_frame.clear_sheet()
             self.view.main_frame.media_frame.clear_sheet()
+            self.update_ui_state("disconnected")
             return False
         self.show_status("Pull Complete")
 
@@ -52,8 +53,32 @@ class Presenter:
             self.view.main_frame.import_frame.media_exists(data_list)
 
         self.get_medsys_state_change()
+        self.update_ui_state("connected")
 
         return True
+
+    def disconnect(self) -> None:
+        self.view.main_frame.bank_frame.clear_sheet()
+        self.view.main_frame.media_frame.clear_sheet()
+        self.view.main_frame.details_frame.clear_properties()
+        self.update_ui_state("disconnected")
+
+    def update_ui_state(self, state: str) -> None:
+        if state == "connected":
+            pass
+            self.view.main_frame.bank_frame.toggle_bindings(True)
+            self.view.main_frame.media_frame.toggle_bindings(True)
+            self.view.main_frame.import_frame.toggle_bindings(True)
+            self.view.main_frame.options_frame.state_change(True)
+            self.view.main_frame.search_frame.state_change(True)
+
+        elif state == "disconnected":
+            pass
+            self.view.main_frame.bank_frame.toggle_bindings(False)
+            self.view.main_frame.media_frame.toggle_bindings(False)
+            self.view.main_frame.import_frame.toggle_bindings(False)
+            self.view.main_frame.options_frame.state_change(False)
+            self.view.main_frame.search_frame.state_change(False)
 
     def get_bank(self, bank: int | None = None) -> None:
         if not self.model.media_loaded:

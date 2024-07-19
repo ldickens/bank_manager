@@ -131,7 +131,10 @@ class OptionsFrame(ctk.CTkFrame):
         Import CSV
         """
         self.import_csv_button = ctk.CTkButton(
-            self, text="Import CSV", command=self.import_csv_callback
+            self,
+            text="Import CSV",
+            command=self.import_csv_callback,
+            state="disabled",
         )
         self.import_csv_button.pack(side="left", pady=5, padx=5)
 
@@ -139,7 +142,7 @@ class OptionsFrame(ctk.CTkFrame):
         Push Media 
         """
         self.update_bank_button = ctk.CTkButton(
-            self, text="Push", command=self.push_media_callback
+            self, text="Push", command=self.push_media_callback, state="disabled"
         )
         self.update_bank_button.pack(side="left", pady=5, padx=5)
 
@@ -190,9 +193,21 @@ class OptionsFrame(ctk.CTkFrame):
         Pull Media
         """
         self.pull_media_button = ctk.CTkButton(
-            self, text="Pull", command=self.pull_callback
+            self, text="Connect", command=self.pull_callback
         )
         self.pull_media_button.pack(side="left", pady=5, padx=5)
+
+    def state_change(self, connected: bool) -> None:
+        if connected:
+            self.update_bank_button.configure(state="normal")
+            self.import_csv_button.configure(state="normal")
+            self.target_ip_entry.configure(state="disabled")
+            self.pull_media_button.configure(text="Disconnect")
+        else:
+            self.update_bank_button.configure(state="disabled")
+            self.import_csv_button.configure(state="disabled")
+            self.target_ip_entry.configure(state="normal")
+            self.pull_media_button.configure(text="Connect")
 
     def push_media_callback(self) -> None:
         self._presenter.update_bank()
@@ -204,8 +219,12 @@ class OptionsFrame(ctk.CTkFrame):
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
 
     def pull_callback(self) -> None:
-        if self._presenter.pull_media():
-            self._presenter.get_thumb()
+        if self.pull_media_button.cget("text") == "Connect":
+            if self._presenter.pull_media():
+                self._presenter.get_thumb()
+                self._presenter.update_ui_state("connected")
+        else:
+            self._presenter.disconnect()
 
     def validate_ip_input_focusin(self, event: Event) -> None:
         self.validate_pre_edit = self.target_ip_var.get()
@@ -295,9 +314,6 @@ class BankSheet(ctk.CTkFrame):
             vertical_scroll_troughcolor="#2c2c2d",
         )
 
-        self.sheet.enable_bindings(
-            "single_select", "arrowkeys", "right_click_popup_menu"
-        )
         self.sheet.row_index([x for x in range(256)])
 
         """
@@ -307,6 +323,14 @@ class BankSheet(ctk.CTkFrame):
         self.sheet.extra_bindings("all_select_events", func=self.select_event_callback)
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+
+    def toggle_bindings(self, enabled: bool):
+        if enabled:
+            self.sheet.enable_bindings(
+                "single_select", "arrowkeys", "right_click_popup_menu"
+            )
+        else:
+            self.sheet.disable_bindings()
 
     def select_event_callback(self, _: Event):
         if selected := self.sheet.get_currently_selected():
@@ -434,6 +458,24 @@ class Details(ctk.CTkFrame):
                 text = text[0:31] + "..."
             label.configure(text=text, require_redraw=True)
 
+    def clear_properties(self) -> None:
+        self.thumbnail_property.pack_forget()
+        self.details_props_frame.pack_forget()
+
+        for label in self.property_details_labels:
+            label.configure(text="", require_redraw=True)
+
+        self.thumbnail_property = ctk.CTkLabel(
+            self.main_property_frame,
+            text="",
+            width=128,
+            height=128,
+            fg_color="black",
+        )
+
+        self.thumbnail_property.pack(pady=10)
+        self.details_props_frame.pack(pady=10)
+
 
 class ImportSheet(ctk.CTkFrame):
     def __init__(self, presenter: Presenter, *args, **kwargs):
@@ -485,12 +527,17 @@ class ImportSheet(ctk.CTkFrame):
             vertical_scroll_troughcolor="#2c2c2d",
         )
 
-        self.sheet.enable_bindings(
-            "single_select", "arrowkeys", "right_click_popup_menu"
-        )
         self.sheet.row_index([x for x in range(256)])
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
+
+    def toggle_bindings(self, enabled: bool):
+        if enabled:
+            self.sheet.enable_bindings(
+                "single_select", "arrowkeys", "right_click_popup_menu"
+            )
+        else:
+            self.sheet.disable_bindings()
 
     def update_sheet(self, data: list[list[str]]) -> None:
         self.sheet.set_sheet_data(
@@ -569,8 +616,15 @@ class MediaSheet(ctk.CTkFrame):
             vertical_scroll_troughcolor="#2c2c2d",
         )
 
-        self.sheet.enable_bindings()
         self.sheet.pack(expand=True, fill="both", padx=20, pady=(0, 20))
+
+    def toggle_bindings(self, enabled: bool):
+        if enabled:
+            self.sheet.enable_bindings(
+                "single_select", "arrowkeys", "right_click_popup_menu"
+            )
+        else:
+            self.sheet.disable_bindings()
 
     def update_sheet(self, data) -> None:
         self.sheet.set_sheet_data(
@@ -699,12 +753,18 @@ class MediaTools(ctk.CTkFrame):
         self._presenter: Presenter = presenter
 
         self.upload_file = ctk.CTkButton(
-            self, text="Upload File...", command=self.upload_file_callback
+            self,
+            text="Upload File...",
+            command=self.upload_file_callback,
+            state="disabled",
         )
         self.upload_file.pack(side="left", padx=(0, 5))
 
         self.upload_folder = ctk.CTkButton(
-            self, text="Upload Folder...", command=self.upload_folder_callback
+            self,
+            text="Upload Folder...",
+            command=self.upload_folder_callback,
+            state="disabled",
         )
         self.upload_folder.pack(side="left", padx=5)
 
@@ -733,3 +793,11 @@ class MediaTools(ctk.CTkFrame):
 
     def lose_focus_callback(self, event: Event) -> None:
         self.focus()
+
+    def state_change(self, connected: bool) -> None:
+        if connected:
+            self.upload_file.configure(state="normal")
+            self.upload_folder.configure(state="normal")
+        else:
+            self.upload_file.configure(state="disabled")
+            self.upload_folder.configure(state="disabled")
