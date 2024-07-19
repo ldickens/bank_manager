@@ -356,7 +356,7 @@ class Model:
                     self.media_loaded = True
                     self.loaded_ip = self.BASE_URL
                     self.start_event_listeners_thread()
-                    print(f"ip: {self.BASE_URL}")
+                    print(f"Target IP: {self.BASE_URL}")
                     return True
         return False
 

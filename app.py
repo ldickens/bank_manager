@@ -680,7 +680,6 @@ class StatusBar(ctk.CTkFrame):
         self.progress_bar.set(
             step / self.progress_bar_length
         )  # ctk progress bar between 0-1
-        print(f"{step=}")
         if self.progress_bar_length == step:  # If complete remove the bar
             self.after(500, self.complete_progress)
 

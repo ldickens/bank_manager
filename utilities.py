@@ -33,9 +33,9 @@ def file_dirs(folder: bool, title: str) -> list[str]:
             return []
 
         for filename in os.listdir(dir):
-            print(filename)
             if pathlib.Path(filename).suffix in SUPPORTED_FILE_TYPES[0][1].split():
                 dirs_list.append(os.path.join(dir, filename))
+
     else:
         dirs = filedialog.askopenfilenames(
             title=title,
