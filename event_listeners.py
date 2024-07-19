@@ -25,6 +25,7 @@ class EventListener:
         self.system_callback = system_callback
         self.preset_callback = preset_callback
         self._address = f"{EventListener.PREFIX}{ip_address}:{EventListener.PORT}"
+        self.connected = True
 
     def connect(self) -> None:
 
@@ -44,8 +45,17 @@ class EventListener:
                     if msg_obj["category"] == "SYSTEM":
                         AppState._update_system = True
                         print("\nSystem change detected: Disconnecting from host.")
+
+                    if self.connected == True:
+                        continue
+                    else:
+                        break
+
             except ConnectionClosed:
                 print("Disconnected from the target host")
+
+    def disconnect(self) -> None:
+        self.connected = False
 
     def _jsonify_subscription(self) -> str:
         event = []

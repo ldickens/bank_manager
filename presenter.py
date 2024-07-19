@@ -40,7 +40,7 @@ class Presenter:
         self.show_status("Pull Complete")
 
         print("Updating Media sheet")
-        self.update_media_sheet()
+        self.get_media_titles()
 
         self.get_bank()
 
@@ -61,11 +61,11 @@ class Presenter:
         self.view.main_frame.bank_frame.clear_sheet()
         self.view.main_frame.media_frame.clear_sheet()
         self.view.main_frame.details_frame.clear_properties()
+        self.model.stop_event_listeners()
         self.update_ui_state("disconnected")
 
     def update_ui_state(self, state: str) -> None:
         if state == "connected":
-            pass
             self.view.main_frame.bank_frame.toggle_bindings(True)
             self.view.main_frame.media_frame.toggle_bindings(True)
             self.view.main_frame.import_frame.toggle_bindings(True)
@@ -73,7 +73,6 @@ class Presenter:
             self.view.main_frame.search_frame.state_change(True)
 
         elif state == "disconnected":
-            pass
             self.view.main_frame.bank_frame.toggle_bindings(False)
             self.view.main_frame.media_frame.toggle_bindings(False)
             self.view.main_frame.import_frame.toggle_bindings(False)
@@ -102,7 +101,7 @@ class Presenter:
     def update_bank_sheet(self, data: list[list[str]]) -> None:
         self.view.main_frame.bank_frame.update_sheet(data)
 
-    def update_media_sheet(self) -> None:
+    def get_media_titles(self) -> None:
         all_titles = []
         for media in self.model.media:
             all_titles.append([media.fileName])
@@ -247,7 +246,7 @@ class Presenter:
 
     def search_media(self, text: str) -> None:
         if not text:
-            self.update_media_sheet()
+            self.get_media_titles()
 
         if matches := self.model.search_media(text):
             self.view.main_frame.media_frame.update_sheet(matches)

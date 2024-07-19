@@ -565,18 +565,20 @@ class ImportSheet(ctk.CTkFrame):
 
 
 class MediaSheet(ctk.CTkFrame):
+
+    HEADERS = ["File Name"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
         Import Sheet
         """
-        HEADERS = ["File Name"]
 
         self.sheet = Sheet(
             self,
             name="Bank_Data",
             show_top_left=False,
-            headers=HEADERS,  # type: ignore
+            headers=MediaSheet.HEADERS,  # type: ignore
             show_x_scrollbar=False,
             total_columns=1,
             align="c",
@@ -639,17 +641,8 @@ class MediaSheet(ctk.CTkFrame):
         )
 
     def clear_sheet(self) -> None:
-        empty_data = [" " for x in range(0, 256)]
-        self.sheet.set_sheet_data(
-            data=empty_data,
-            reset_col_positions=True,
-            reset_row_positions=True,
-            redraw=True,
-            verify=False,
-            reset_highlights=True,
-            keep_formatting=False,
-            delete_options=True,
-        )
+        self.sheet.reset(table=True)
+        self.sheet.headers(MediaSheet.HEADERS)
 
 
 class StatusBar(ctk.CTkFrame):

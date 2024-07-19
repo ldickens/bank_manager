@@ -78,6 +78,7 @@ END OF DEFINITIONS
 class Model:
 
     callbacks_exist: bool = False
+    event_listener: EventListener | None = None
 
     def __init__(self) -> None:
         self.media: list[Media] = []
@@ -368,12 +369,16 @@ class Model:
             thread.start()
             Model.callbacks_exist = True
 
+    def stop_event_listeners(self) -> None:
+        if Model.callbacks_exist == True and self.event_listener:
+            self.event_listener.disconnect()
+
     def _threaded_event_listeners(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")
-        listener = EventListener(
+        self.event_listener = EventListener(
             media_callback=True, system_callback=True, ip_address=ip_address
         )
-        listener.connect()
+        self.event_listener.connect()
 
     def init_banks(self) -> bool:
         if len(self.banks) == 0 or self.BASE_URL != self.loaded_ip:
