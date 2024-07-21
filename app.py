@@ -29,10 +29,21 @@ class App(ctk.CTk):
 
         self.top_level_window: PopupWindow | None = None
 
-    def open_window(self, text: str, title: str) -> PopupWindow:
+    def create_confirmation_window(
+        self,
+        text: str,
+        title: str,
+        find_replace: bool = False,
+        title_data: list[list[str]] = [],
+    ) -> PopupWindow:
         if self.top_level_window is None or not self.top_level_window.winfo_exists():
             self.top_level_window = PopupWindow(
-                self, self._presenter, text_message=text, title=title
+                self,
+                self._presenter,
+                text_message=text,
+                title=title,
+                find_replace=find_replace,
+                title_data=title_data,
             )
             self.top_level_window.grab_set()
 
@@ -321,6 +332,7 @@ class BankSheet(ctk.CTkFrame):
         """
 
         self.sheet.extra_bindings("all_select_events", func=self.select_event_callback)
+        self.sheet.popup_menu_add_command("Replace...", self.find_and_replace)
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
@@ -331,6 +343,19 @@ class BankSheet(ctk.CTkFrame):
             )
         else:
             self.sheet.disable_bindings()
+
+    def find_and_replace(self) -> None:
+        if selected_row := self.sheet.get_currently_selected():
+            row = selected_row[0]
+
+            # offset by one to adjust  for starting at 0
+            cell_data = self.sheet[f"A{row+1}"].data
+            title_string = str(cell_data)
+
+            if title_string in ["", "None"]:
+                return
+
+            self._presenter.find_and_replace(title_string)
 
     def select_event_callback(self, _: Event):
         if selected := self.sheet.get_currently_selected():
@@ -628,7 +653,7 @@ class MediaSheet(ctk.CTkFrame):
         else:
             self.sheet.disable_bindings()
 
-    def update_sheet(self, data) -> None:
+    def update_sheet(self, data: list[list[str]]) -> None:
         self.sheet.set_sheet_data(
             data=data,
             reset_col_positions=True,

@@ -18,6 +18,7 @@ class Presenter:
         self.view = App(presenter=self)
         self.current_ip: str = "127.0.0.1"
         self.confirm_upload: bool | None = None
+        self.replacement_filename: str = ""
 
     def run(self) -> None:
         self.view.mainloop()
@@ -107,6 +108,51 @@ class Presenter:
             all_titles.append([media.fileName])
         self.view.main_frame.media_frame.update_sheet(all_titles)
 
+    def find_and_replace(self, target_title: str) -> None:
+        all_titles: list[list[str]] = []
+        target_map_indexes: list[str] = []
+
+        for media in self.model.media:
+            all_titles.append([media.fileName])
+            if media.fileName == target_title:
+                target_map_indexes = media.mapIndexes
+
+        print(f"{target_map_indexes=}")
+
+        self.view.create_confirmation_window(
+            f"Select a file to replace {target_title}?",
+            "Find and replace",
+            find_replace=True,
+            title_data=all_titles,
+        )
+
+        self.threaded_find_and_replace_start(target_map_indexes)
+
+    def threaded_find_and_replace_start(self, target_map_idxs: list[str]) -> None:
+        thread = Thread(
+            target=self._threaded_push_media_index_updates,
+            args=([*target_map_idxs],),
+            daemon=True,
+        )
+        thread.start()
+
+    def _threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
+        while self.confirm_upload == None and self.view.top_level_window:
+            sleep(1)
+
+        if self.confirm_upload:
+            confirmed = 0
+
+            for map_idx in target_map_idxs:
+                if self.model.push_media_index(self.replacement_filename, int(map_idx)):
+                    confirmed += 1
+
+            self.view.main_frame.status.set_status_text(
+                f"{confirmed} / {len(target_map_idxs)} files changed"
+            )
+
+        self.confirm_upload = None
+
     def set_target_ip(self, target_ip: str) -> None:
         self.current_ip = target_ip
         new_url = "http://" + target_ip + ":40512"
@@ -190,7 +236,7 @@ class Presenter:
         while len(media_titles) < 256:
             media_titles.append("None")
 
-        map_idx = int(int(bank_idx) * 256)
+        map_idx = int(bank_idx) * 256
 
         if int(bank_idx) == 0:  # clip offset for bank 0
             map_idx += 1
@@ -244,18 +290,29 @@ class Presenter:
             print(f"bank data: {len(bank_slice)} Items\ncsv data: {len(csv)} Items")
         print("Sheets Synchronised")
 
-    def search_media(self, text: str) -> None:
+    def search_media(
+        self, text: str, find_replace: bool = False
+    ) -> list[list[str]] | None:
         if not text:
             self.get_media_titles()
 
-        if matches := self.model.search_media(text):
-            self.view.main_frame.media_frame.update_sheet(matches)
-            return
+        matches = self.model.search_media(text)
+
+        if find_replace:
+            return matches
+
         else:
-            matches = [[]]
             self.view.main_frame.status.set_status_text("No Matches")
             self.view.main_frame.media_frame.update_sheet(matches)
             self.view.update_idletasks()
+
+        # if matches := self.model.search_media(text):
+        #     self.view.main_frame.media_frame.update_sheet(matches)
+        # else:
+        #     matches = [[]]
+        #     self.view.main_frame.status.set_status_text("No Matches")
+        #     self.view.main_frame.media_frame.update_sheet(matches)
+        #     self.view.update_idletasks()
 
     def upload_files(self, folder: bool) -> None:
         filenames = self.get_media_filenames(folder)
@@ -263,7 +320,7 @@ class Presenter:
         if not len(filenames):  # cancel if no media selected
             return
 
-        self.view.open_window(
+        self.view.create_confirmation_window(
             f"Do you want to upload {len(filenames)} files?", "Confirmation"
         )
 
@@ -284,7 +341,7 @@ class Presenter:
         thread.start()
 
     def _threaded_media_load(self, filenames: list[str]) -> None:
-        while self.confirm_upload == None:
+        while self.confirm_upload == None and self.view.top_level_window:
             sleep(1)
 
         if self.confirm_upload:

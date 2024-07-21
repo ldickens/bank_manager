@@ -49,7 +49,7 @@ class EventListener:
                     if self.connected == True:
                         continue
                     else:
-                        break
+                        break  # Dirty break because I don't think Hippo handshakes a closure.
 
             except ConnectionClosed:
                 print("Disconnected from the target host")
