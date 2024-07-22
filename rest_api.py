@@ -390,7 +390,7 @@ class Model:
                 self.banks[bank].add_clip(media, slot)
         return True
 
-    def get_bank_thumbnail(self, bank: int) -> None:
+    def get_bank_thumbnail(self, bank: int) -> bool:
         for media in self.banks[bank]._media_clips.values():
             if media:
                 idx = str(media.iD)
@@ -399,6 +399,9 @@ class Model:
                     thumbnail = self.thumbnail_request(endpoint[0])
                     if thumbnail:
                         media.thumbnail = thumbnail
+                    else:
+                        return False
+        return True
 
     def push_media_index(self, filename: str, map_idx: int) -> bool:
         media_idx = ""

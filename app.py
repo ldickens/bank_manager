@@ -556,11 +556,14 @@ class ImportSheet(ctk.CTkFrame):
 
         self.sheet.pack(expand=True, fill="both", padx=20, pady=20)
 
+        self.sheet.extra_bindings("FocusOut", lambda: print("FocusOut"))
+
+    def deselect_cells(self, _: Event) -> None:
+        self.sheet.deselect(column=0)
+
     def toggle_bindings(self, enabled: bool):
         if enabled:
-            self.sheet.enable_bindings(
-                "single_select", "arrowkeys", "right_click_popup_menu"
-            )
+            self.sheet.enable_bindings("None")
         else:
             self.sheet.disable_bindings()
 
@@ -647,9 +650,7 @@ class MediaSheet(ctk.CTkFrame):
 
     def toggle_bindings(self, enabled: bool):
         if enabled:
-            self.sheet.enable_bindings(
-                "single_select", "arrowkeys", "right_click_popup_menu"
-            )
+            self.sheet.enable_bindings("None")
         else:
             self.sheet.disable_bindings()
 

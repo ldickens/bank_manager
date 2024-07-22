@@ -33,10 +33,11 @@ class Presenter:
 
         print("Pulling Media")
         if not self.model.init_database():
-            self.show_status("Connection Error: Failed to load media")
-            self.view.main_frame.bank_frame.clear_sheet()
-            self.view.main_frame.media_frame.clear_sheet()
-            self.update_ui_state("disconnected")
+            # self.show_status("Connection Error: Failed to load media")
+            # self.view.main_frame.bank_frame.clear_sheet()
+            # self.view.main_frame.media_frame.clear_sheet()
+            # self.update_ui_state("disconnected")
+            self.disconnect()
             return False
         self.show_status("Pull Complete")
 
@@ -195,9 +196,10 @@ class Presenter:
         return False
 
     def get_thumb(self) -> None:
-        self.model.get_bank_thumbnail(
+        if not self.model.get_bank_thumbnail(
             int(self.view.main_frame.options_frame.bank_select_entry_var.get())
-        )
+        ):
+            self.disconnect()
 
     def get_media_details(self, row_idx: int) -> None:
         bank = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
