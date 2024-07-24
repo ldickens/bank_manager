@@ -681,10 +681,9 @@ class StatusBar(ctk.CTkFrame):
             self, height=30, width=100, fg_color="transparent"
         )
         self.status_text_frame.pack(side="left", expand=False, fill=None)
-        self.status_var = StringVar()
         self.status = ctk.CTkLabel(
             self.status_text_frame,
-            textvariable=self.status_var,
+            text="",
             width=100,
             fg_color="transparent",
             justify="right",
@@ -732,7 +731,7 @@ class StatusBar(ctk.CTkFrame):
             self.uploads_text_var.set(f"{previous[0].strip()} / {total}")
 
     def set_status_text(self, text: str, auto: bool = False) -> None:
-        self.status_var = text
+        self.status.configure(text=text, require_redraw=True)
         if auto == False:
             self.after(1000, self.set_status_text, " ", True)
 

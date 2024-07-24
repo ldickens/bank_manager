@@ -33,10 +33,7 @@ class Presenter:
 
         print("Pulling Media")
         if not self.model.init_database():
-            # self.show_status("Connection Error: Failed to load media")
-            # self.view.main_frame.bank_frame.clear_sheet()
-            # self.view.main_frame.media_frame.clear_sheet()
-            # self.update_ui_state("disconnected")
+            self.view.main_frame.status.set_status_text("Failed to connect")
             self.disconnect()
             return False
         self.show_status("Pull Complete")
