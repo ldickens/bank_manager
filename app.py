@@ -20,6 +20,7 @@ class App(ctk.CTk):
         self.geometry("1440x900")
         self.title("Bank Manager")
         self._presenter = presenter
+        ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme(
             path.abspath(path.join(path.dirname(__file__), "theme.json"))
         )
