@@ -31,7 +31,7 @@ class Presenter:
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
-        print("Pulling Media")
+        print("Trying to pull Media")
         if not self.model.init_database():
             self.view.main_frame.status.set_status_text("Failed to connect")
             self.disconnect()
