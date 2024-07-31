@@ -162,3 +162,7 @@ cython_debug/
 # VSCode workspace
 *.code-workspace
 .vscode
+
+# Pyinstaller config files
+
+pyinstaller_cmd.txt
