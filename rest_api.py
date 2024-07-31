@@ -139,7 +139,7 @@ class Model:
         """
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.get(full_URL, timeout=0.5)
+            response = requests.get(full_URL, timeout=3)
 
             if (
                 response.status_code == 200
@@ -164,7 +164,7 @@ class Model:
 
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.get(full_URL, timeout=0.5)
+            response = requests.get(full_URL, timeout=3)
 
             if (
                 response.status_code == 200
@@ -190,7 +190,7 @@ class Model:
 
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.put(full_URL, timeout=0.5)
+            response = requests.put(full_URL, timeout=3)
 
             if response.status_code == 200:
                 return True
@@ -264,7 +264,7 @@ class Model:
     def delete_media_entry_request(self, endpoint: str) -> bool | None:
         try:
             full_URL = self.BASE_URL + endpoint
-            response = requests.delete(full_URL, timeout=0.5)
+            response = requests.delete(full_URL, timeout=3)
 
             if response.status_code == 200:
                 return True
