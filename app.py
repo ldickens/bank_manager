@@ -173,7 +173,7 @@ class OptionsFrame(ctk.CTkFrame):
 
         self.target_ip_entry.bind("<FocusIn>", self.validate_ip_input_focusin)
         self.target_ip_entry.bind("<FocusOut>", self.validate_ip_input_focusout)
-        self.target_ip_entry.bind("<Return>", self.lose_focus_callback)
+        self.target_ip_entry.bind("<Return>", self.return_pull_callback)
 
         """
         Bank Select
@@ -199,7 +199,9 @@ class OptionsFrame(ctk.CTkFrame):
         self.bank_select_entry.bind(
             "<FocusIn>", self.validate_bank_select_entry_focusin
         )
-        self.bank_select_entry.bind("<Return>", self.lose_focus_callback)
+        self.bank_select_entry.bind(
+            "<Return>", self.validate_bank_select_entry_focusout
+        )
 
         """
         Pull Media
@@ -237,6 +239,10 @@ class OptionsFrame(ctk.CTkFrame):
                 self._presenter.update_ui_state("connected")
         else:
             self._presenter.disconnect()
+
+    def return_pull_callback(self, Event: Event) -> None:
+        self.lose_focus_callback(Event)
+        self.pull_callback()
 
     def validate_ip_input_focusin(self, event: Event) -> None:
         self.validate_pre_edit = self.target_ip_var.get()
