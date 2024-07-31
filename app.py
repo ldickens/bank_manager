@@ -3,7 +3,7 @@ import tkinter.filedialog
 from os import path
 from re import fullmatch
 from tkinter import Event, StringVar
-from typing import Any
+from typing import Any, Callable
 
 import customtkinter as ctk
 from PIL import Image
@@ -234,9 +234,7 @@ class OptionsFrame(ctk.CTkFrame):
 
     def pull_callback(self) -> None:
         if self.pull_media_button.cget("text") == "Connect":
-            if self._presenter.pull_media():
-                self._presenter.get_thumb()
-                self._presenter.update_ui_state("connected")
+            self._presenter.pull_media()
         else:
             self._presenter.disconnect()
 

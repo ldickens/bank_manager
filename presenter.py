@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from threading import Thread
 from time import sleep
+from typing import Callable
 
 from PIL import Image
 
@@ -26,16 +27,24 @@ class Presenter:
     def init_database(self) -> bool:
         return self.model.init_database()
 
-    def pull_media(self) -> bool:
+    def _threaded_request_start(self, func: Callable[[], None]) -> None:
+        thread = Thread(target=func, daemon=True)
+        thread.start()
+
+    def pull_media(self) -> None:
 
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
         print("Trying to pull Media")
-        if not self.model.init_database():
-            self.view.main_frame.status.set_status_text("Failed to connect")
-            self.disconnect()
-            return False
+
+        try:
+            if not self.model.init_database():
+                self.view.main_frame.status.set_status_text("Failed to connect")
+                self.disconnect()
+        except AttributeError as e:
+            self.view.main_frame.status.set_status_text(str(e))
+
         self.show_status("Pull Complete")
 
         print("Updating Media sheet")
@@ -54,7 +63,8 @@ class Presenter:
         self.get_medsys_state_change()
         self.update_ui_state("connected")
 
-        return True
+        self.get_thumb()
+        self.update_ui_state("connected")
 
     def disconnect(self) -> None:
         self.view.main_frame.bank_frame.clear_sheet()
@@ -128,13 +138,13 @@ class Presenter:
 
     def threaded_find_and_replace_start(self, target_map_idxs: list[str]) -> None:
         thread = Thread(
-            target=self._threaded_push_media_index_updates,
+            target=self.__threaded_push_media_index_updates,
             args=([*target_map_idxs],),
             daemon=True,
         )
         thread.start()
 
-    def _threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
+    def __threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
         while self.confirm_upload == None and self.view.top_level_window:
             sleep(1)
 
