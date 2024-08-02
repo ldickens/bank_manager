@@ -30,6 +30,11 @@ class App(ctk.CTk):
 
         self.top_level_window: PopupWindow | None = None
 
+        self.main_frame.bind("<<CheckQueue>>", self.check_queue)
+
+    def check_queue(self) -> None:
+        self._presenter.check_queue()
+
     def create_confirmation_window(
         self,
         text: str,
@@ -106,8 +111,7 @@ class MainWindow(ctk.CTkFrame):
         self.bank_frame.grid_configure(column=2, row=1, sticky="nsew", ipadx=20)
 
         """
-        MediaTools Bar
-        """
+        MediaTools Bar """
         self.search_frame = MediaTools(self._presenter, master=self.top_frame)
         self.search_frame.grid_configure(
             column=0, columnspan=3, row=2, sticky="nsew", pady=(0, 10), padx=(20, 10)

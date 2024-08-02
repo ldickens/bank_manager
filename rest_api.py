@@ -7,7 +7,7 @@ import requests
 from PIL import Image
 
 from bank import Bank, Media
-from endpoint_enums import Endpoints
+from Enums.endpoint_enums import Endpoints
 from event_listeners import EventListener
 
 """

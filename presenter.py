@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from queue import Empty, Full, Queue
 from threading import Thread
 from time import sleep
+from typing import Callable
 
 from PIL import Image
 
+from _types import UITicket
 from app import App
 from app_state import AppState
 from bank import MEDIA_TYPE
+from Enums.ticket_enums import UIUpdateReason
 from rest_api import Model
 from utilities import file_dirs, parse_csv
 
@@ -19,12 +23,38 @@ class Presenter:
         self.current_ip: str = "127.0.0.1"
         self.confirm_upload: bool | None = None
         self.replacement_filename: str = ""
+        self.update_ui = Queue()
 
     def run(self) -> None:
         self.view.mainloop()
 
+    def check_queue(self) -> None:
+        try:
+            ticket: UITicket
+            ticket = self.update_ui.get(block=False, timeout=3)
+
+            if ticket.ticket_type == UIUpdateReason.UPDATE_MEDIA_SHEET:
+                pass
+
+            elif ticket.ticket_type == UIUpdateReason.UPDATE_BANK_SHEET:
+                pass
+
+            elif ticket.ticket_type == UIUpdateReason.UPDATE_IMPORT_SHEET:
+                pass
+
+            elif ticket.ticket_type == UIUpdateReason.UPDATE_STATUS:
+                self.view.main_frame.status.set_status_text(ticket.ticket_value)
+
+        except Full:
+            self.disconnect()
+        except Empty:
+            self.disconnect()
+
     def init_database(self) -> bool:
         return self.model.init_database()
+
+    def start_threaded_function(self, func: Callable) -> None:
+        Thread(target=func, daemon=True).start()
 
     def pull_media(self) -> bool:
 
@@ -193,6 +223,10 @@ class Presenter:
         return False
 
     def get_thumb(self) -> None:
+        """
+        This is a threaded process to retrieve the thumbnails
+        TODO: Thread this process
+        """
         if not self.model.get_bank_thumbnail(
             int(self.view.main_frame.options_frame.bank_select_entry_var.get())
         ):

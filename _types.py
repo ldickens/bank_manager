@@ -1,10 +1,13 @@
-# type definitions
+from queue import Queue
 from typing import Protocol
+
+from Enums.ticket_enums import UIUpdateReason
 
 
 class Presenter(Protocol):
     confirm_upload: bool | None
     replacement_filename: str
+    update_ui: Queue
 
     def run(self) -> None: ...
     def set_target_ip(self, target_ip: str) -> None: ...
@@ -25,6 +28,7 @@ class Presenter(Protocol):
     def update_ui_state(self, state: str) -> None: ...
     def disconnect(self) -> None: ...
     def find_and_replace(self, target_title: str) -> None: ...
+    def check_queue(self) -> None: ...
 
 
 class AppState(Protocol):
@@ -37,3 +41,13 @@ class AppState(Protocol):
 
     @staticmethod
     def reset_uploading() -> None: ...
+
+
+class UITicket:
+    def __init__(self, ticket_type: UIUpdateReason, ticket_value: str = ""):
+
+        self.ticket_type: UIUpdateReason = ticket_type
+        self.ticket_value: str
+
+        if ticket_value:
+            self.ticket_value = ticket_value
