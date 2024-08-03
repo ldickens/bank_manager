@@ -43,7 +43,7 @@ class Presenter:
                     self.update_bank_sheet(data)
 
             elif ticket.ticket_type == UIUpdateReason.UPDATE_IMPORT_SHEET:
-                pass
+                NotImplementedError()
 
             elif ticket.ticket_type == UIUpdateReason.UPDATE_STATUS:
                 self.view.main_frame.status.set_status_text(ticket.ticket_value)
