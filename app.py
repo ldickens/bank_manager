@@ -240,6 +240,8 @@ class OptionsFrame(ctk.CTkFrame):
         if self.pull_media_button.cget("text") == "Connect":
             self._presenter.pull_media()
             # self._presenter.get_thumb() # This should be moved to the presenter
+        else:
+            self._presenter.disconnect()
 
     def return_pull_callback(self, Event: Event) -> None:
         self.lose_focus_callback(Event)

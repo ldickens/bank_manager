@@ -365,7 +365,7 @@ class Model:
     def start_event_listeners_thread(self) -> None:
         if Model.callbacks_exist == False:
             thread = threading.Thread(
-                target=self.__threaded_event_listeners, daemon=True
+                target=self._threaded_event_listeners, daemon=True
             )
             thread.start()
             Model.callbacks_exist = True
@@ -374,7 +374,7 @@ class Model:
         if Model.callbacks_exist == True and self.event_listener:
             self.event_listener.disconnect()
 
-    def __threaded_event_listeners(self) -> None:
+    def _threaded_event_listeners(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")
         self.event_listener = EventListener(
             media_callback=True, system_callback=True, ip_address=ip_address

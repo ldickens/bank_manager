@@ -9,3 +9,5 @@ class UIUpdateReason(Enum):
     UI_STATE = auto()
     DISCONNECT = auto()
     VERIFY_IMPORT_SHEET = auto()
+    CREATE_UPLOAD_PROGRESS_BAR = auto()
+    SET_WORKING_BAR = auto()
