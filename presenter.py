@@ -34,16 +34,34 @@ class Presenter:
             ticket = self.update_ui.get(block=False, timeout=3)
 
             if ticket.ticket_type == UIUpdateReason.UPDATE_MEDIA_SHEET:
-                pass
+                print("Updating Media sheet")
+                self.view.main_frame.media_frame.update_sheet(self.get_media_titles())
 
             elif ticket.ticket_type == UIUpdateReason.UPDATE_BANK_SHEET:
-                pass
+                print("Updating Bank Sheet")
+                if data := self.get_bank():
+                    self.update_bank_sheet(data)
 
             elif ticket.ticket_type == UIUpdateReason.UPDATE_IMPORT_SHEET:
                 pass
 
             elif ticket.ticket_type == UIUpdateReason.UPDATE_STATUS:
                 self.view.main_frame.status.set_status_text(ticket.ticket_value)
+
+            elif ticket.ticket_type == UIUpdateReason.UI_STATE:
+                self.update_ui_state(ticket.ticket_value)
+
+            elif ticket.ticket_type == UIUpdateReason.DISCONNECT:
+                self.disconnect()
+
+            elif ticket.ticket_type == UIUpdateReason.VERIFY_IMPORT_SHEET:
+                # checks to see if import sheet entries are in the media_library
+                if data := self.view.main_frame.import_frame.sheet.get_column_data(0):
+                    data_list = []
+
+                    for item in data:
+                        data_list.append([str(item)])
+                    self.view.main_frame.import_frame.media_exists(data_list)
 
         except Full:
             self.disconnect()
@@ -56,42 +74,48 @@ class Presenter:
     def start_threaded_function(self, func: Callable) -> None:
         Thread(target=func, daemon=True).start()
 
-    def pull_media(self) -> bool:
+    def pull_media(self) -> None:
+        self.start_threaded_function(self._request_get_media)
+        self.get_medsys_state_change()
 
+    def _request_get_media(self) -> None:
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
+
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
         print("Trying to pull Media")
+
+        # This is the main call to the rest_api
         if not self.model.init_database():
-            self.view.main_frame.status.set_status_text("Failed to connect")
-            self.disconnect()
-            return False
-        self.show_status("Pull Complete")
 
-        print("Updating Media sheet")
-        self.get_media_titles()
+            self.ui_ticket_handler(
+                UITicket(
+                    UIUpdateReason.UPDATE_STATUS, "Failed to connect to remote host"
+                )
+            )
 
-        self.get_bank()
+            self.ui_ticket_handler(UITicket(UIUpdateReason.DISCONNECT))
+            return
 
-        # checks to see if import sheet entries are in the media_library
-        if data := self.view.main_frame.import_frame.sheet.get_column_data(0):
-            data_list = []
+        # Update all the UI elements via the queue
+        self.ui_ticket_handler(
+            UITicket(UIUpdateReason.UPDATE_STATUS, "Media data retrieved")
+        )
+        self.ui_ticket_handler(UITicket(UIUpdateReason.UPDATE_MEDIA_SHEET))
+        self.ui_ticket_handler(UITicket(UIUpdateReason.UPDATE_BANK_SHEET))
+        self.ui_ticket_handler(UITicket(UIUpdateReason.VERIFY_IMPORT_SHEET))
+        self.ui_ticket_handler(UITicket(UIUpdateReason.UI_STATE, "Connected"))
 
-            for item in data:
-                data_list.append([str(item)])
-            self.view.main_frame.import_frame.media_exists(data_list)
-
-        self.get_medsys_state_change()
-        self.update_ui_state("connected")
-
-        return True
+    def ui_ticket_handler(self, ticket: UITicket) -> None:
+        self.update_ui.put(ticket)
+        self.view.event_generate("<<CheckQueue>>", when="tail")
 
     def disconnect(self) -> None:
         self.view.main_frame.bank_frame.clear_sheet()
         self.view.main_frame.media_frame.clear_sheet()
         self.view.main_frame.details_frame.clear_properties()
         self.model.stop_event_listeners()
-        self.update_ui_state("disconnected")
+        # self.ui_ticket_handler(UITicket(UIUpdateReason.UPDATE_STATUS, "Disconnected"))
 
     def update_ui_state(self, state: str) -> None:
         if state == "connected":
@@ -108,9 +132,13 @@ class Presenter:
             self.view.main_frame.options_frame.state_change(False)
             self.view.main_frame.search_frame.state_change(False)
 
-    def get_bank(self, bank: int | None = None) -> None:
+        else:
+            print(f"UI state {state} is not recognised")
+
+    def get_bank(self, bank: int | None = None) -> list[list[str]] | None:
         if not self.model.media_loaded:
             return
+
         if bank == None:
             idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
         else:
@@ -124,17 +152,18 @@ class Presenter:
                 media_name.append(["None"])
             else:
                 media_name.append([media["fileName"]])
-        print("Updating Bank Sheet")
-        self.update_bank_sheet(media_name)
+        return media_name
 
     def update_bank_sheet(self, data: list[list[str]]) -> None:
         self.view.main_frame.bank_frame.update_sheet(data)
 
-    def get_media_titles(self) -> None:
+    def get_media_titles(self) -> list[list[str]]:
         all_titles = []
+
         for media in self.model.media:
             all_titles.append([media.fileName])
-        self.view.main_frame.media_frame.update_sheet(all_titles)
+
+        return all_titles
 
     def find_and_replace(self, target_title: str) -> None:
         all_titles: list[list[str]] = []

@@ -30,9 +30,9 @@ class App(ctk.CTk):
 
         self.top_level_window: PopupWindow | None = None
 
-        self.main_frame.bind("<<CheckQueue>>", self.check_queue)
+        self.bind("<<CheckQueue>>", self.check_queue)
 
-    def check_queue(self) -> None:
+    def check_queue(self, _: Event) -> None:
         self._presenter.check_queue()
 
     def create_confirmation_window(
@@ -238,11 +238,8 @@ class OptionsFrame(ctk.CTkFrame):
 
     def pull_callback(self) -> None:
         if self.pull_media_button.cget("text") == "Connect":
-            if self._presenter.pull_media():
-                self._presenter.get_thumb()
-                self._presenter.update_ui_state("connected")
-        else:
-            self._presenter.disconnect()
+            self._presenter.pull_media()
+            # self._presenter.get_thumb() # This should be moved to the presenter
 
     def return_pull_callback(self, Event: Event) -> None:
         self.lose_focus_callback(Event)

@@ -322,11 +322,11 @@ class Model:
             self.media = []
             self.banks = {}
 
-        if self.__init_media():
+        if self._init_media():
             return self.init_banks()
         return False
 
-    def __init_media(
+    def _init_media(
         self,
     ) -> bool:  # Should inverse the if statements for less indentation
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
@@ -354,6 +354,7 @@ class Model:
 
                         if valid_clip != None:
                             self.media.append(self.create_media(valid_clip))
+
                     self.media_loaded = True
                     self.loaded_ip = self.BASE_URL
                     self.start_event_listeners_thread()
