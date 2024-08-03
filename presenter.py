@@ -132,6 +132,8 @@ class Presenter:
         self.view.main_frame.bank_frame.clear_sheet()
         self.view.main_frame.media_frame.clear_sheet()
         self.view.main_frame.details_frame.clear_properties()
+        self.view.main_frame.status.set_state_working_bar(False)
+        self.view.main_frame.status.complete_progress()
         self.model.stop_event_listeners()
         self.update_ui_state("disconnected")
 
