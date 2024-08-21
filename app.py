@@ -3,7 +3,7 @@ import tkinter.filedialog
 from os import path
 from re import fullmatch
 from tkinter import Event, StringVar
-from typing import Any
+from typing import Any, Callable
 
 import customtkinter as ctk
 from PIL import Image

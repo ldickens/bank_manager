@@ -87,6 +87,7 @@ class Presenter:
     def init_database(self) -> bool:
         return self.model.init_database()
 
+
     def start_threaded_function(self, func: Callable) -> None:
         Thread(target=func, daemon=True).start()
 
@@ -94,13 +95,16 @@ class Presenter:
         self.start_threaded_function(self._request_get_media)
         self.get_medsys_state_change()
 
+
     def _request_get_media(self) -> None:
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
 
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
         print("Trying to pull Media")
+
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
+
 
         # This is the main call to the rest_api
         if not self.model.init_database():
@@ -127,9 +131,11 @@ class Presenter:
         self.ui_ticket_handler(UITicket(UIUpdateReason.UI_STATE, "connected"))
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
 
+
     def ui_ticket_handler(self, ticket: UITicket) -> None:
         self.update_ui.put(ticket)
         self.view.event_generate("<<CheckQueue>>", when="tail")
+
 
     def disconnect(self) -> None:
         self.view.main_frame.bank_frame.clear_sheet()
@@ -215,13 +221,13 @@ class Presenter:
 
     def threaded_find_and_replace_start(self, target_map_idxs: list[str]) -> None:
         thread = Thread(
-            target=self._threaded_push_media_index_updates,
+            target=self.__threaded_push_media_index_updates,
             args=([*target_map_idxs],),
             daemon=True,
         )
         thread.start()
 
-    def _threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
+    def __threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
         while self.confirm_upload == None and self.view.top_level_window:
             sleep(1)
 
