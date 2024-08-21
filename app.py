@@ -30,6 +30,11 @@ class App(ctk.CTk):
 
         self.top_level_window: PopupWindow | None = None
 
+        self.bind("<<CheckQueue>>", self.check_queue)
+
+    def check_queue(self, _: Event) -> None:
+        self._presenter.check_queue()
+
     def create_confirmation_window(
         self,
         text: str,
@@ -106,8 +111,7 @@ class MainWindow(ctk.CTkFrame):
         self.bank_frame.grid_configure(column=2, row=1, sticky="nsew", ipadx=20)
 
         """
-        MediaTools Bar
-        """
+        MediaTools Bar """
         self.search_frame = MediaTools(self._presenter, master=self.top_frame)
         self.search_frame.grid_configure(
             column=0, columnspan=3, row=2, sticky="nsew", pady=(0, 10), padx=(20, 10)
@@ -275,8 +279,9 @@ class OptionsFrame(ctk.CTkFrame):
             self._presenter.show_status("Bank number not valid")
 
         bank_idx = int(self.bank_select_entry_var.get())
-        self._presenter.get_bank(bank_idx)
+        self._presenter.create_update_bank_sheet_ticket()
         self._presenter.get_thumb()
+        self.focus()
 
 
 class BankSheet(ctk.CTkFrame):

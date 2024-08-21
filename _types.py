@@ -1,15 +1,24 @@
-# type definitions
-from typing import Callable, Protocol
+
+from queue import Queue
+from typing import Protocol
+
+
+
+from Enums.ticket_enums import UIUpdateReason
 
 
 class Presenter(Protocol):
     confirm_upload: bool | None
     replacement_filename: str
+    update_ui: Queue
 
     def run(self) -> None: ...
     def set_target_ip(self, target_ip: str) -> None: ...
     def pull_media(self) -> None: ...
-    def get_bank(self, bank: int | None) -> None: ...
+
+    def _request_get_media(self) -> None: ...
+    def get_bank(self, bank: int | None = None) -> list[list[str]] | None: ...
+
     def show_status(self, msg: str) -> None: ...
     def import_csv(self, file_name: str) -> None: ...
     def populate_import_sheet(self, data: list[list[str]]) -> None: ...
@@ -25,7 +34,10 @@ class Presenter(Protocol):
     def update_ui_state(self, state: str) -> None: ...
     def disconnect(self) -> None: ...
     def find_and_replace(self, target_title: str) -> None: ...
-    def _threaded_request_start(self, func: Callable[[], None]) -> None: ...
+
+    def check_queue(self) -> None: ...
+    def create_update_bank_sheet_ticket(self) -> None: ...
+
 
 
 class AppState(Protocol):
@@ -38,3 +50,13 @@ class AppState(Protocol):
 
     @staticmethod
     def reset_uploading() -> None: ...
+
+
+class UITicket:
+    def __init__(self, ticket_type: UIUpdateReason, ticket_value: str = ""):
+
+        self.ticket_type: UIUpdateReason = ticket_type
+        self.ticket_value: str
+
+        if ticket_value:
+            self.ticket_value = ticket_value
