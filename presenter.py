@@ -81,6 +81,9 @@ class Presenter:
         except Empty:
             self.disconnect()
 
+    def create_update_bank_sheet_ticket(self) -> None:
+        self.ui_ticket_handler(UITicket(UIUpdateReason.UPDATE_BANK_SHEET))
+
     def init_database(self) -> bool:
         return self.model.init_database()
 
