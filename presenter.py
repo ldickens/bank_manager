@@ -335,11 +335,12 @@ class Presenter:
 
     def push_media_from_csv(self, bank_idx: int, media_titles: list[str]) -> None:
         # Start the working progress bar
+        # Cancelling of the working bar is done once the pull of new media update
+        # is complete.
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
 
         # Start enumerating through the csv import list and updating the remote
         # media manager with each title.
-        # print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
 
         while len(media_titles) < 256:
             media_titles.append("None")
@@ -377,9 +378,6 @@ class Presenter:
         self.ui_ticket_handler(
             UITicket(UIUpdateReason.UPDATE_STATUS, f"Transfer Complete")
         )
-
-        # Cancel the working progress bar
-        self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
 
     def verify_match(self) -> None:
         # Update bank sheet after changes
