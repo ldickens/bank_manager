@@ -229,9 +229,6 @@ class OptionsFrame(ctk.CTkFrame):
 
     def push_media_callback(self) -> None:
         self._presenter.update_bank()
-        self._presenter.pull_media()
-        self._presenter.verify_match()
-        self._presenter.get_thumb()
 
     def import_csv_callback(self) -> None:
         self._presenter.import_csv(str(tkinter.filedialog.askopenfilename()))
