@@ -119,7 +119,7 @@ class Presenter:
             return
 
         # Rest request to get the thumbnails for each media entry
-        self.get_thumb()
+        self.start_thumb_request()
 
         # Update all the UI elements via the queue
         self.ui_ticket_handler(
@@ -283,14 +283,16 @@ class Presenter:
 
         return False
 
-    def get_thumb(self) -> None:
+    def start_thumb_request(self) -> None:
+        bank_idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
+        Thread(target=self.get_thumb, args=(bank_idx,), daemon=True)
+
+    def get_thumb(self, bank_idx: int) -> None:
         """
         This is a threaded process to retrieve the thumbnails
         TODO: Thread this process
         """
-        if not self.model.get_bank_thumbnail(
-            int(self.view.main_frame.options_frame.bank_select_entry_var.get())
-        ):
+        if not self.model.get_bank_thumbnail(bank_idx):
             self.disconnect()
 
     def get_media_details(self, row_idx: int) -> None:
@@ -323,22 +325,28 @@ class Presenter:
         self.view.update_idletasks()
 
     def update_bank(self) -> None:
+        bank_idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
+        media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
+
+        Thread(
+            target=self.push_media_from_csv, args=[bank_idx, media_titles], daemon=True
+        ).start()
+        self.view.update_idletasks()
+
+    def push_media_from_csv(self, bank_idx: int, media_titles: list[str]) -> None:
         # Start the working progress bar
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
-        self.view.update_idletasks()
 
         # Start enumerating through the csv import list and updating the remote
         # media manager with each title.
-        bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
-        media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
         # print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
 
         while len(media_titles) < 256:
             media_titles.append("None")
 
-        map_idx = int(bank_idx) * 256
+        map_idx = bank_idx * 256
 
-        if int(bank_idx) == 0:  # clip offset for bank 0
+        if bank_idx == 0:  # clip offset for bank 0
             map_idx += 1
 
         success = 0
@@ -359,9 +367,15 @@ class Presenter:
 
             map_idx += 1
 
-        self.show_status("Transfer Complete")
-        print(
-            f"File Transfer Complete: Success = {success}, Failure = {fail}, Removed = {removed}"
+        # Notify user of status
+        self.ui_ticket_handler(
+            UITicket(
+                UIUpdateReason.UPDATE_STATUS,
+                f"File Transfer Complete: Success = {success}, Failure = {fail}, Removed = {removed}",
+            )
+        )
+        self.ui_ticket_handler(
+            UITicket(UIUpdateReason.UPDATE_STATUS, f"Transfer Complete")
         )
 
         # Cancel the working progress bar

@@ -277,7 +277,7 @@ class OptionsFrame(ctk.CTkFrame):
 
         bank_idx = int(self.bank_select_entry_var.get())
         self._presenter.create_update_bank_sheet_ticket()
-        self._presenter.get_thumb()
+        self._presenter.start_thumb_request()
         self.focus()
 
 
