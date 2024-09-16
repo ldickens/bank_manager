@@ -27,6 +27,7 @@ class Presenter:
 
     def run(self) -> None:
         self.view.mainloop()
+        self.get_medsys_state_change()
 
     def check_queue(self) -> None:
         try:
@@ -87,14 +88,14 @@ class Presenter:
     def init_database(self) -> bool:
         return self.model.init_database()
 
-
     def start_threaded_function(self, func: Callable) -> None:
         Thread(target=func, daemon=True).start()
 
     def pull_media(self) -> None:
         self.start_threaded_function(self._request_get_media)
-        self.get_medsys_state_change()
 
+        # Removed because the run now starts the get_medsys_state_change loop
+        self.get_medsys_state_change()
 
     def _request_get_media(self) -> None:
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
@@ -104,7 +105,6 @@ class Presenter:
         print("Trying to pull Media")
 
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
-
 
         # This is the main call to the rest_api
         if not self.model.init_database():
@@ -131,11 +131,9 @@ class Presenter:
         self.ui_ticket_handler(UITicket(UIUpdateReason.UI_STATE, "connected"))
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
 
-
     def ui_ticket_handler(self, ticket: UITicket) -> None:
         self.update_ui.put(ticket)
         self.view.event_generate("<<CheckQueue>>", when="tail")
-
 
     def disconnect(self) -> None:
         self.view.main_frame.bank_frame.clear_sheet()
@@ -325,9 +323,15 @@ class Presenter:
         self.view.update_idletasks()
 
     def update_bank(self) -> None:
+        # Start the working progress bar
+        self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
+        self.view.update_idletasks()
+
+        # Start enumerating through the csv import list and updating the remote
+        # media manager with each title.
         bank_idx = self.view.main_frame.options_frame.bank_select_entry_var.get()
         media_titles = self.view.main_frame.import_frame.sheet.get_column_data(0)
-        print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
+        # print(f"bank index: {bank_idx}\nmedia_titles: {media_titles}")
 
         while len(media_titles) < 256:
             media_titles.append("None")
@@ -347,7 +351,7 @@ class Presenter:
                 if self.model.push_media_index(str(title), map_idx):
                     removed += 1
 
-            if self.model.push_media_index(str(title), map_idx):
+            elif self.model.push_media_index(str(title), map_idx):
                 success += 1
 
             else:
@@ -359,6 +363,9 @@ class Presenter:
         print(
             f"File Transfer Complete: Success = {success}, Failure = {fail}, Removed = {removed}"
         )
+
+        # Cancel the working progress bar
+        self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
 
     def verify_match(self) -> None:
         # Update bank sheet after changes
@@ -377,7 +384,8 @@ class Presenter:
 
         while bank_slice != csv:
             sleep(0.5)
-            self.pull_media()
+            # self.pull_media()
+            # self.get_medsys_state_change()
             self.view.update_idletasks()
             bank_slice = self.view.main_frame.bank_frame.sheet.get_column_data(0)[
                 bank_start_idx : len(csv) + bank_end_idx_offset

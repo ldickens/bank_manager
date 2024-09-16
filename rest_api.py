@@ -1,3 +1,4 @@
+# import os
 import os
 import threading
 from io import BytesIO
@@ -410,13 +411,13 @@ class Model:
             # No filename in the import list.
             if filename == "" or filename == "None":
                 if not self.banks[map_idx // 256].get_media_clip(map_idx % 256):
-                    print(f"Map Entry {map_idx}: Empty")
+                    # print(f"Map Entry {map_idx}: Empty")
                     return True
 
                 url = self.validate_endpoint(Endpoints.DEL_ENTRY, map_idx=map_idx)[0]
 
                 if self.delete_media_entry_request(url):
-                    print(f"Update Map Entry {map_idx}: Remove Entry Success")
+                    # print(f"Update Map Entry {map_idx}: Remove Entry Success")
                     return True
 
             # search for filename in media library stored in local memory
@@ -427,10 +428,10 @@ class Model:
                 )[0]
 
                 if self.put_media_entry_request(url):
-                    print(f"Update Map Entry {map_idx}: Change Media Success")
+                    # print(f"Update Map Entry {map_idx}: Change Media Success")
                     return True
 
-        print(f"Map Entry {map_idx} - Media not found: {filename}")
+        # print(f"Map Entry {map_idx} - Media not found: {filename}")
 
         return False
 
