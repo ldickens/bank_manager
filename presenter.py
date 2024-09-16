@@ -305,6 +305,11 @@ class Presenter:
     def set_UI_media_props(
         self, thumbnail: Image.Image, properties: MEDIA_TYPE
     ) -> None:
+        """
+        Configures the input properties Json into the correct format
+        for displaying in the properties view. Once formatted properties
+        are made they are passed to two other functions to update the UI.
+        """
         formatted_properties = [
             str(properties["fileName"]),
             str(properties["fileSize"]),
@@ -474,6 +479,11 @@ class Presenter:
         self.confirm_upload = None
 
     def get_medsys_state_change(self) -> None:
+        """
+        This method continually is called by the main thread to monitor any
+        changes reported back from the Event Listeners. The changes are
+        stored in the AppState class and actioned from this method.
+        """
         if AppState._update_system == True:
             print("Disconnecting from host")  # Disconnect from the host.
             AppState._update_system = False

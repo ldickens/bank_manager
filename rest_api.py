@@ -2,6 +2,7 @@
 import os
 import threading
 from io import BytesIO
+from time import perf_counter
 from typing import Literal, TypedDict
 
 import requests
@@ -323,45 +324,59 @@ class Model:
             self.media = []
             self.banks = {}
 
+        init_media_time_start = perf_counter()
         if self._init_media():
-            return self.init_banks()
+            init_media_time_end = perf_counter()
+            init_media_time_total = init_media_time_end - init_media_time_start
+            print("Before optimisations _init_media completed in ~2.794s")
+            print(f"_init_media function completed in {init_media_time_total}")
+
+            init_banks_time_start = perf_counter()
+            func = self.init_banks()
+            init_banks_time_end = perf_counter()
+            init_banks_time_total = init_banks_time_end - init_banks_time_start
+            print("Before optimisations _init_banks completed in ~0.011")
+            print(f"_init_banks function completed in {init_banks_time_total}")
+
+            return func
         return False
 
     def _init_media(
         self,
     ) -> bool:  # Should inverse the if statements for less indentation
+
         endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
-        if endpoint != None:
-            media_data = self.make_get_request(*endpoint)
 
-            if media_data != None:
-                valid_media = self.validate_media_file_type(media_data)
+        if not endpoint:
+            return False
 
-                if valid_media != None:
-                    for file in valid_media["mediaFiles"]:
-                        media_id = file["mediaID"]
-                        endpoint = self.validate_endpoint(
-                            Endpoints.GET_MEDIA_DATA, media_id
-                        )
+        if not (media_data := self.make_get_request(*endpoint)):
+            return False
 
-                        if endpoint != None:
-                            clip_data = self.make_get_request(*endpoint)
+        if not (valid_media := self.validate_media_file_type(media_data)):
+            return False
 
-                        if clip_data != None:
-                            valid_clip = self.validate_media_type(clip_data)
+        for file in valid_media["mediaFiles"]:
+            media_id = file["mediaID"]
+            endpoint = self.validate_endpoint(Endpoints.GET_MEDIA_DATA, media_id)
 
-                        else:
-                            raise AttributeError(f"Failed to get data for {media_id}")
+            if endpoint != None:
+                clip_data = self.make_get_request(*endpoint)
 
-                        if valid_clip != None:
-                            self.media.append(self.create_media(valid_clip))
+            if clip_data != None:
+                valid_clip = self.validate_media_type(clip_data)
 
-                    self.media_loaded = True
-                    self.loaded_ip = self.BASE_URL
-                    self.start_event_listeners_thread()
-                    print(f"Target IP: {self.BASE_URL}")
-                    return True
-        return False
+            else:
+                raise AttributeError(f"Failed to get data for {media_id}")
+
+            if valid_clip != None:
+                self.media.append(self.create_media(valid_clip))
+
+        self.media_loaded = True
+        self.loaded_ip = self.BASE_URL
+        self.start_event_listeners_thread()
+        print(f"Target IP: {self.BASE_URL}")
+        return True
 
     def start_event_listeners_thread(self) -> None:
         if Model.callbacks_exist == False:
