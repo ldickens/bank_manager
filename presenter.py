@@ -285,7 +285,7 @@ class Presenter:
 
     def start_thumb_request(self) -> None:
         bank_idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
-        Thread(target=self.get_thumb, args=(bank_idx,), daemon=True)
+        Thread(target=self.get_thumb, args=(bank_idx,), daemon=True).start()
 
     def get_thumb(self, bank_idx: int) -> None:
         """
