@@ -197,9 +197,9 @@ class OptionsFrame(ctk.CTkFrame):
         )
         self.bank_select_entry.pack(side="left", pady=5, padx=5)
 
-        self.bank_select_entry.bind(
-            "<FocusOut>", self.validate_bank_select_entry_focusout
-        )
+        # self.bank_select_entry.bind(
+        #     "<FocusOut>", self.validate_bank_select_entry_focusout
+        # )
         self.bank_select_entry.bind(
             "<FocusIn>", self.validate_bank_select_entry_focusin
         )
@@ -275,9 +275,10 @@ class OptionsFrame(ctk.CTkFrame):
             self.bank_select_entry_var.set(self.validate_bank_pre_edit)
             self._presenter.show_status("Bank number not valid")
 
-        bank_idx = int(self.bank_select_entry_var.get())
-        self._presenter.create_update_bank_sheet_ticket()
-        self._presenter.start_thumb_request()
+        self._presenter.pull_media()
+        # bank_idx = int(self.bank_select_entry_var.get())
+        # self._presenter.create_update_bank_sheet_ticket()
+        # self._presenter.start_thumb_request()
         self.focus()
 
 

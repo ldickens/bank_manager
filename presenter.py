@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from queue import Empty, Full, Queue
-from threading import Thread
+from threading import Lock, Thread
 from time import sleep
 from typing import Callable
 
@@ -24,6 +24,7 @@ class Presenter:
         self.confirm_upload: bool | None = None
         self.replacement_filename: str = ""
         self.update_ui = Queue()
+        self.mutex_lock = Lock()
 
     def run(self) -> None:
         self.view.mainloop()
@@ -98,6 +99,7 @@ class Presenter:
         self.get_medsys_state_change()
 
     def _request_get_media(self) -> None:
+        self.mutex_lock.acquire()
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
 
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
@@ -130,6 +132,8 @@ class Presenter:
         self.ui_ticket_handler(UITicket(UIUpdateReason.VERIFY_IMPORT_SHEET))
         self.ui_ticket_handler(UITicket(UIUpdateReason.UI_STATE, "connected"))
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
+
+        self.mutex_lock.release()
 
     def ui_ticket_handler(self, ticket: UITicket) -> None:
         self.update_ui.put(ticket)
@@ -219,13 +223,15 @@ class Presenter:
 
     def threaded_find_and_replace_start(self, target_map_idxs: list[str]) -> None:
         thread = Thread(
-            target=self.__threaded_push_media_index_updates,
+            target=self._threaded_push_media_index_updates,
             args=([*target_map_idxs],),
             daemon=True,
         )
         thread.start()
 
-    def __threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
+    def _threaded_push_media_index_updates(self, target_map_idxs: list[str]) -> None:
+        self.mutex_lock.acquire()
+
         while self.confirm_upload == None and self.view.top_level_window:
             sleep(1)
 
@@ -239,6 +245,7 @@ class Presenter:
             self.view.main_frame.status.set_status_text(
                 f"{confirmed} / {len(target_map_idxs)} files changed"
             )
+        self.mutex_lock.release()
 
         self.confirm_upload = None
 
@@ -292,8 +299,9 @@ class Presenter:
         This is a threaded process to retrieve the thumbnails
         TODO: Thread this process
         """
-        if not self.model.get_bank_thumbnail(bank_idx):
-            self.disconnect()
+        with self.mutex_lock:
+            if not self.model.get_bank_thumbnail(bank_idx):
+                self.disconnect()
 
     def get_media_details(self, row_idx: int) -> None:
         bank = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
@@ -354,6 +362,8 @@ class Presenter:
         fail = 0
         removed = 0
 
+        self.mutex_lock.acquire()
+
         for title in media_titles:
             if title == "None" or title == "":
 
@@ -367,6 +377,8 @@ class Presenter:
                 fail += 1
 
             map_idx += 1
+
+        self.mutex_lock.release()
 
         # Notify user of status
         self.ui_ticket_handler(

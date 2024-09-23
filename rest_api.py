@@ -409,7 +409,7 @@ class Model:
         media_idx = ""
         for media in self.media:
             # No filename in the import list.
-            if filename == "" or filename == "None":
+            if (filename == "" or filename == "None") and filename != media.fileName:
                 if not self.banks[map_idx // 256].get_media_clip(map_idx % 256):
                     # print(f"Map Entry {map_idx}: Empty")
                     return True
