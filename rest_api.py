@@ -112,6 +112,10 @@ class Model:
             case Endpoints.GET_MEDIA_MAP:
                 return (endpoint.value, "MediaMapType")
 
+            case Endpoints.GET_MAP_MEDIA_DATA:
+                endpoint_url = endpoint.value + f"{map_idx}"
+                return (endpoint_url, "MediaType")
+
             case Endpoints.GET_MEDIA_DATA:
                 endpoint_url = endpoint.value + f"{media_idx}"
                 return (endpoint_url, "MediaType")
@@ -150,6 +154,11 @@ class Model:
                 d_obj = response.json()
                 d_obj.update({"tag": tag})
                 return d_obj
+            elif (
+                response.status_code == 404
+                and "application/json" in response.headers["Content-Type"]
+            ):
+                return None
 
             raise ValueError("Response Error")
 
@@ -319,13 +328,13 @@ class Model:
     def delete_media(self) -> None:
         self.media = []
 
-    def init_database(self) -> bool:
+    def init_database(self, bank_idx: int) -> bool:
         if self.media_loaded:
             self.media = []
             self.banks = {}
 
         init_media_time_start = perf_counter()
-        if self._init_media():
+        if self._init_media(bank_idx):
             init_media_time_end = perf_counter()
             init_media_time_total = init_media_time_end - init_media_time_start
             print("Before optimisations _init_media completed in ~2.794s")
@@ -341,24 +350,24 @@ class Model:
             return func
         return False
 
-    def _init_media(
-        self,
-    ) -> bool:  # Should inverse the if statements for less indentation
+    def _init_media(self, bank_idx: int) -> bool:
+        # endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
 
-        endpoint = self.validate_endpoint(Endpoints.GET_MEDIA)
+        # if not endpoint:
+        #     return False
 
-        if not endpoint:
-            return False
+        # if not (media_data := self.make_get_request(*endpoint)):
+        #     return False
 
-        if not (media_data := self.make_get_request(*endpoint)):
-            return False
+        # if not (valid_media := self.validate_media_file_type(media_data)):
+        #     return False
 
-        if not (valid_media := self.validate_media_file_type(media_data)):
-            return False
-
-        for file in valid_media["mediaFiles"]:
-            media_id = file["mediaID"]
-            endpoint = self.validate_endpoint(Endpoints.GET_MEDIA_DATA, media_id)
+        map_idx_offset = (bank_idx * 256) + 1  # map_idx starts at 1 according to API.
+        map_idx_end = map_idx_offset + 256
+        for map_idx in range(map_idx_offset, map_idx_end):
+            endpoint = self.validate_endpoint(
+                Endpoints.GET_MAP_MEDIA_DATA, map_idx=map_idx
+            )
 
             if endpoint != None:
                 clip_data = self.make_get_request(*endpoint)
@@ -367,7 +376,7 @@ class Model:
                 valid_clip = self.validate_media_type(clip_data)
 
             else:
-                raise AttributeError(f"Failed to get data for {media_id}")
+                continue  # Can't find valid map probably because it is empty
 
             if valid_clip != None:
                 self.media.append(self.create_media(valid_clip))

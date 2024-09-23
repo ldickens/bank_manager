@@ -235,7 +235,8 @@ class OptionsFrame(ctk.CTkFrame):
 
     def pull_callback(self) -> None:
         if self.pull_media_button.cget("text") == "Connect":
-            self._presenter.pull_media()
+            bank_idx = int(self.bank_select_entry_var.get())
+            self._presenter.pull_media(bank_idx)
         else:
             self._presenter.disconnect()
 
@@ -276,8 +277,8 @@ class OptionsFrame(ctk.CTkFrame):
             self._presenter.show_status("Bank number not valid")
 
         bank_idx = int(self.bank_select_entry_var.get())
-        self._presenter.create_update_bank_sheet_ticket()
-        self._presenter.start_thumb_request()
+        self._presenter.pull_media(bank_idx)
+        # self._presenter.create_update_bank_sheet_ticket()
         self.focus()
 
 

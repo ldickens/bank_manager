@@ -88,26 +88,21 @@ class Presenter:
     def init_database(self) -> bool:
         return self.model.init_database()
 
-    def start_threaded_function(self, func: Callable) -> None:
-        Thread(target=func, daemon=True).start()
-
-    def pull_media(self) -> None:
-        self.start_threaded_function(self._request_get_media)
-
-        # Removed because the run now starts the get_medsys_state_change loop
+    def pull_media(self, bank_idx: int) -> None:
+        Thread(target=self._request_get_media, args=(bank_idx,)).start()
         self.get_medsys_state_change()
 
-    def _request_get_media(self) -> None:
+    def _request_get_media(self, bank_idx: int) -> None:
         if self.view.main_frame.options_frame.target_ip_var.get() != self.current_ip:
 
             self.set_target_ip(self.view.main_frame.options_frame.target_ip_var.get())
 
-        print("Trying to pull Media")
+        print("Pulling media data")
 
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
 
         # This is the main call to the rest_api
-        if not self.model.init_database():
+        if not self.model.init_database(bank_idx):
 
             self.ui_ticket_handler(
                 UITicket(
@@ -151,6 +146,7 @@ class Presenter:
             self.view.main_frame.import_frame.toggle_bindings(True)
             self.view.main_frame.options_frame.state_change(True)
             self.view.main_frame.search_frame.state_change(True)
+            AppState.connected = False
 
         elif state == "disconnected":
             self.view.main_frame.bank_frame.toggle_bindings(False)
@@ -158,6 +154,7 @@ class Presenter:
             self.view.main_frame.import_frame.toggle_bindings(False)
             self.view.main_frame.options_frame.state_change(False)
             self.view.main_frame.search_frame.state_change(False)
+            AppState.connected = False
 
         else:
             print(f"UI state {state} is not recognised")
@@ -467,16 +464,19 @@ class Presenter:
 
         if self.confirm_upload:
             progress_steps = len(filenames)
-            AppState._total_steps = progress_steps
+            AppState.total_steps = progress_steps
             self.ui_ticket_handler(
                 UITicket(UIUpdateReason.CREATE_UPLOAD_PROGRESS_BAR, str(progress_steps))
             )
             self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "1"))
-            AppState._uploading = True
+            AppState.uploading = True
             for file in filenames:
                 self.model.upload_file(file)
 
         self.confirm_upload = None
+
+    def connection_status(self) -> bool:
+        return AppState.connected
 
     def get_medsys_state_change(self) -> None:
         """
@@ -484,27 +484,30 @@ class Presenter:
         changes reported back from the Event Listeners. The changes are
         stored in the AppState class and actioned from this method.
         """
-        if AppState._update_system == True:
+        if AppState.update_system == True:
             print("Disconnecting from host")  # Disconnect from the host.
-            AppState._update_system = False
+            AppState.update_system = False
 
-        if AppState._update_media == True:
+        if AppState.update_media == True:
 
-            AppState._update_media = False
-            self.pull_media()  # Pull media since change
+            AppState.update_media = False
+            bank_idx = int(
+                self.view.main_frame.options_frame.bank_select_entry_var.get()
+            )
+            self.pull_media(bank_idx)  # Pull media since change
 
-            if AppState._uploading == False:
+            if AppState.uploading == False:
                 return
 
-            progress = AppState._progress_steps
+            progress = AppState.progress_steps
             self.view.main_frame.status.progress_bar_step(progress)
             self.view.main_frame.status.set_uploads_text(completed=str(progress))
             self.view.update_idletasks()
 
             if (
-                AppState._progress_steps != 0
-                and AppState._progress_steps != 0
-                and AppState._progress_steps == AppState._total_steps
+                AppState.progress_steps != 0
+                and AppState.progress_steps != 0
+                and AppState.progress_steps == AppState.total_steps
             ):
                 AppState.reset_uploading()
 

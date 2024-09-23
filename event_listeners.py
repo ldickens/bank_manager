@@ -37,13 +37,13 @@ class EventListener:
                         continue
                     msg_obj = loads(message)
                     if msg_obj["category"] == "MEDIA":
-                        AppState._update_media = True
+                        AppState.update_media = True
                         print("\nMedia Updated: Reload required")
-                        if AppState._uploading:
-                            AppState._progress_steps += 1
+                        if AppState.uploading:
+                            AppState.progress_steps += 1
 
                     if msg_obj["category"] == "SYSTEM":
-                        AppState._update_system = True
+                        AppState.update_system = True
                         print("\nSystem change detected: Disconnecting from host.")
 
                     if self.connected == True:
