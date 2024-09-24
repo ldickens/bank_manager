@@ -374,6 +374,8 @@ class Model:
     def stop_event_listeners(self) -> None:
         if Model.callbacks_exist == True and self.event_listener:
             self.event_listener.disconnect()
+            Model.callbacks_exist = False
+            self.event_listener = None
 
     def _threaded_event_listeners(self) -> None:
         ip_address = self.BASE_URL.split(":")[-2].strip("/")

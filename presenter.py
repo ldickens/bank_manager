@@ -140,6 +140,7 @@ class Presenter:
     def disconnect(self) -> None:
         self.view.main_frame.bank_frame.clear_sheet()
         self.view.main_frame.media_frame.clear_sheet()
+        # self.view.main_frame.import_frame.clear_sheet() # not required as checks are made each connection
         self.view.main_frame.details_frame.clear_properties()
         self.view.main_frame.status.set_state_working_bar(False)
         self.view.main_frame.status.complete_progress()

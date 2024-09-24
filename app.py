@@ -583,6 +583,19 @@ class ImportSheet(ctk.CTkFrame):
         else:
             self.sheet.disable_bindings()
 
+    def clear_sheet(self) -> None:
+        empty_data = [" " for x in range(0, 256)]
+        self.sheet.set_sheet_data(
+            data=empty_data,
+            reset_col_positions=True,
+            reset_row_positions=True,
+            redraw=True,
+            verify=False,
+            reset_highlights=True,
+            keep_formatting=False,
+            delete_options=True,
+        )
+
     def update_sheet(self, data: list[list[str]]) -> None:
         self.sheet.set_sheet_data(
             data=data,

@@ -30,29 +30,34 @@ class EventListener:
     def connect(self) -> None:
 
         with webclient.connect(self._address) as ws:
-            try:
-                ws.send(self._jsonify_subscription())
-                for message in ws:
-                    if message == "OK":
-                        continue
-                    msg_obj = loads(message)
-                    if msg_obj["category"] == "MEDIA":
-                        AppState._update_media = True
-                        print("\nMedia Updated: Reload required")
-                        if AppState._uploading:
-                            AppState._progress_steps += 1
+            self.connected = True
+            ws.send(self._jsonify_subscription())
+            while self.connected == True:
+                try:
+                    if (message := ws.recv(timeout=1)) != None:
+                        if message == "OK":
+                            continue
+                        msg_obj = loads(message)
+                        if msg_obj["category"] == "MEDIA":
+                            AppState._update_media = True
+                            print("\nMedia Updated: Reload required")
+                            if AppState._uploading:
+                                AppState._progress_steps += 1
 
-                    if msg_obj["category"] == "SYSTEM":
-                        AppState._update_system = True
-                        print("\nSystem change detected: Disconnecting from host.")
+                        if msg_obj["category"] == "SYSTEM":
+                            AppState._update_system = True
+                            print("\nSystem change detected: Disconnecting from host.")
 
-                    if self.connected == True:
-                        continue
-                    else:
-                        break  # Dirty break because I don't think Hippo handshakes a closure.
-
-            except ConnectionClosed:
-                print("Disconnected from the target host")
+                    # if self.connected == True:
+                    #     continue
+                    # else:
+                    #     break  # Dirty break because I don't think Hippo handshakes a closure.
+                except TimeoutError:
+                    continue
+                except ConnectionClosed:
+                    print("Disconnected from the target host")
+                    self.disconnect()
+                    break
 
     def disconnect(self) -> None:
         self.connected = False
