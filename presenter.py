@@ -96,7 +96,7 @@ class Presenter:
         self.start_threaded_function(self._request_get_media)
 
         # Removed because the run now starts the get_medsys_state_change loop
-        self.get_medsys_state_change()
+        # self.get_medsys_state_change()
 
     def _request_get_media(self) -> None:
         self.mutex_lock.acquire()
@@ -118,6 +118,7 @@ class Presenter:
             )
 
             self.ui_ticket_handler(UITicket(UIUpdateReason.DISCONNECT))
+            self.mutex_lock.release()
             return
 
         # Rest request to get the thumbnails for each media entry
@@ -292,7 +293,7 @@ class Presenter:
 
     def start_thumb_request(self) -> None:
         bank_idx = int(self.view.main_frame.options_frame.bank_select_entry_var.get())
-        Thread(target=self.get_thumb, args=(bank_idx,), daemon=True)
+        Thread(target=self.get_thumb, args=(bank_idx,), daemon=True).start()
 
     def get_thumb(self, bank_idx: int) -> None:
         """
