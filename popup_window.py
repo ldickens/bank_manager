@@ -21,7 +21,9 @@ class PopupWindow(ctk.CTkToplevel):
         **kwargs,
     ):
         super().__init__(master, *args, **kwargs)
-        self.geometry("400x150")
+        self.geometry(
+            f"400x150+{str(int((self.winfo_screenwidth() - 400) / 2))}+{str(int((self.winfo_screenheight() - 150) / 2))}"
+        )
         self.title = title
         self.find_replace = find_replace
         self.title_data = title_data
