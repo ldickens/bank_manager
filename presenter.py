@@ -28,7 +28,6 @@ class Presenter:
 
     def run(self) -> None:
         self.view.mainloop()
-        self.get_medsys_state_change()
 
     def check_queue(self) -> None:
         try:
@@ -95,8 +94,7 @@ class Presenter:
     def pull_media(self) -> None:
         self.start_threaded_function(self._request_get_media)
 
-        # Removed because the run now starts the get_medsys_state_change loop
-        # self.get_medsys_state_change()
+        self.get_medsys_state_change()
 
     def _request_get_media(self) -> None:
         self.mutex_lock.acquire()
@@ -118,7 +116,6 @@ class Presenter:
             )
 
             self.ui_ticket_handler(UITicket(UIUpdateReason.DISCONNECT))
-            self.mutex_lock.release()
             return
 
         # Rest request to get the thumbnails for each media entry
