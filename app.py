@@ -17,7 +17,15 @@ class App(ctk.CTk):
     def __init__(self, presenter: Presenter) -> None:
         super().__init__()
 
-        self.geometry("1440x900")
+        self.screen_width: int = self.winfo_screenwidth()
+        self.screen_height: int = self.winfo_screenheight()
+        self._win_width: int = 1440
+        self._win_height: int = 900
+        self.win_pos_x: int = int((self.screen_width - self._win_width) / 2)
+        self.win_pos_y: int = int((self.screen_height - self._win_height) / 2)
+        self.geometry(
+            f"{str(self._win_width)}x{str(self._win_height)}+{str(self.win_pos_x)}+{str(self.win_pos_y)}"
+        )
         self.title("Bank Manager")
         self._presenter = presenter
         ctk.set_appearance_mode("dark")
