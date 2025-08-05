@@ -344,17 +344,26 @@ class Model:
                             Endpoints.GET_MEDIA_DATA, media_id
                         )
 
-                        if endpoint != None:
-                            clip_data = self.make_get_request(*endpoint)
+                        try:
+                            if endpoint != None:
+                                clip_data = self.make_get_request(*endpoint)
 
-                        if clip_data != None:
-                            valid_clip = self.validate_media_type(clip_data)
+                            if clip_data != None:
+                                valid_clip = self.validate_media_type(clip_data)
 
-                        else:
-                            raise AttributeError(f"Failed to get data for {media_id}")
+                            else:
+                                raise AttributeError(
+                                    f"Failed to get data for {media_id}"
+                                )
 
-                        if valid_clip != None:
-                            self.media.append(self.create_media(valid_clip))
+                            if valid_clip != None:
+                                self.media.append(self.create_media(valid_clip))
+
+                        except AttributeError as e:
+                            print(
+                                f"Failed to find a file on the server terminating connection. Error{e.name}"
+                            )
+                            return False
 
                     self.media_loaded = True
                     self.loaded_ip = self.BASE_URL

@@ -25,6 +25,7 @@ class Presenter:
         self.replacement_filename: str = ""
         self.update_ui = Queue()
         self.mutex_lock = Lock()
+        self.updating_media = False
 
     def run(self) -> None:
         self.view.mainloop()
@@ -116,6 +117,8 @@ class Presenter:
             )
 
             self.ui_ticket_handler(UITicket(UIUpdateReason.DISCONNECT))
+            self.updating_media = False
+            self.mutex_lock.release()
             return
 
         # Rest request to get the thumbnails for each media entry
@@ -131,6 +134,7 @@ class Presenter:
         self.ui_ticket_handler(UITicket(UIUpdateReason.UI_STATE, "connected"))
         self.ui_ticket_handler(UITicket(UIUpdateReason.SET_WORKING_BAR, "0"))
 
+        self.updating_media = False
         self.mutex_lock.release()
 
     def ui_ticket_handler(self, ticket: UITicket) -> None:
@@ -492,7 +496,9 @@ class Presenter:
         if AppState._update_media == True:
 
             AppState._update_media = False
-            self.pull_media()  # Pull media since change
+            if self.updating_media == False:
+                self.updating_media = True
+                self.pull_media()  # Pull media since change
 
             if AppState._uploading == False:
                 return
